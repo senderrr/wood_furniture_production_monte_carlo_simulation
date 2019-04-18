@@ -36,29 +36,28 @@ def orders(low, likely, high, confidence, samples):
             all_items.append(order_items)
             print(order_items)
 
-    #print(all_items)
-    for w in all_items:
-        print(w)
-    #need to add swapping machines (this is for doing like items at the same time)
-        order_A = np.count_nonzero(w == 'A')
-        order_B = np.count_nonzero(w == 'B')
-        order_C = np.count_nonzero(w == 'C')
-        order_D = np.count_nonzero(w == 'D')
-        order_E = np.count_nonzero(w == 'E')
+        for w in all_items:
+            print(w)
+        #need to add swapping machines (this is for doing like items at the same time)
+            order_A = np.count_nonzero(w == 'A')
+            order_B = np.count_nonzero(w == 'B')
+            order_C = np.count_nonzero(w == 'C')
+            order_D = np.count_nonzero(w == 'D')
+            order_E = np.count_nonzero(w == 'E')
 
 
-        order_A_time = order_A * 10
-        order_B_time = order_B * 3
-        order_C_time = order_C * 8
-        order_D_time = order_D * 9
-        order_E_time = order_E * 15
+            order_A_time = order_A * 10
+            order_B_time = order_B * 3
+            order_C_time = order_C * 8
+            order_D_time = order_D * 9
+            order_E_time = order_E * 15
 
-        print('Order A: hours to build:', order_A_time)
-        print('Order B: hours to build:', order_B_time)
-        print('Order C: hours to build:', order_C_time)
-        print('Order D: hours to build:', order_D_time)
-        print('Order E: hours to build:', order_E_time)
-        print('All Orders : hours to build:', (order_A_time + order_B_time + order_C_time + order_D_time + order_E_time))
+            print('Order A: hours to build:', order_A_time)
+            print('Order B: hours to build:', order_B_time)
+            print('Order C: hours to build:', order_C_time)
+            print('Order D: hours to build:', order_D_time)
+            print('Order E: hours to build:', order_E_time)
+            print('All Orders : hours to build:', (order_A_time + order_B_time + order_C_time + order_D_time + order_E_time))
 
 # generate how many workers are available
 # def worker_count(low, likely, high, n_workers, samples):
