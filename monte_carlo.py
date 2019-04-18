@@ -16,7 +16,6 @@ def pert(low, likely, high, confidence=4, samples=10000):
 
 
 
-# generate weekly orders
 # confidence 2
 # miller & ranom
 
