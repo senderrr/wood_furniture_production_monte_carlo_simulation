@@ -71,7 +71,7 @@ def orders(low, likely, high, daily_count_confidence, order_size_confidence, sam
                     'Item D': column_d,
                     'Item E': column_e})
     df['Order #'] = df['Order #'] + 1
-    print(df)
+    #print(df)
 
     # dictionary version
     # start = z[0] + 1
@@ -88,7 +88,60 @@ def orders(low, likely, high, daily_count_confidence, order_size_confidence, sam
     return df
     # return all_orders
 
+def hours(array, machine_time_swap, low, likely, high, confidence):
+    item_count = array
+    item_time = pert(low, likely, high, confidence=confidence, samples=item_count)
+    item_time = np.sum(item_time) / 7.5
+    if item_time != 0:
+        item_time = item_time + machine_time_swap
+    item_time = np.around(item_time, decimals=1)
+    return item_time
 
+def first_come_queue(df, build_confidence, samples):
+    item_a_list = []
+    item_b_list = []
+    item_c_list = []
+    item_d_list = []
+    item_e_list = []
+
+    # https://stackoverflow.com/questions/16476924/how-to-iterate-over-rows-in-a-dataframe-in-pandas
+    for index, row in df.iterrows():
+        item_a_count = row['Item A']
+        item_b_count = row['Item B']
+        item_c_count = row['Item C']
+        item_d_count = row['Item D']
+        item_e_count = row['Item E']
+
+        item_a_time = hours(item_a_count, 0.5, 4, 8, 11, confidence=build_confidence)
+        item_a_list.append(item_a_time)
+
+        item_b_time = hours(item_b_count,0.5, 1, 2, 5, confidence=build_confidence)
+        item_b_list.append(item_b_time)
+
+        item_c_time = hours(item_c_count, 0.5, 0.5, 1, 3, confidence=build_confidence)
+        item_c_list.append(item_c_time)
+
+        item_d_time = hours(item_d_count, 0.5, 2, 3, 6, confidence=build_confidence)
+        item_d_list.append(item_d_time)
+
+        item_e_time = hours(item_e_count, 0.5, 5, 7, 10, confidence=build_confidence)
+        item_e_list.append(item_e_time)
+
+        #print(row['Order #'], item_b_time, item_c_time, item_d_time, item_e_time)
+
+    df['A T'] = item_a_list
+    df['B T'] = item_b_list
+    df['C T'] = item_c_list
+    df['D T'] = item_d_list
+    df['E T'] = item_e_list
+    df['Order Build Time (work days)'] = df['A T'] + df['B T'] + df['C T'] + df['D T'] + df['E T']
+    df = df[['Order #', 'Day', 'Item A', 'Item C', 'Item D', 'Item E', 'Order Build Time (work days)']]
+    print(df)
+    # print(q)
+
+
+
+        # print(q)
 # def first_come_queue(q, build_confidence, samples):
 
 # order_counter = 0
@@ -238,18 +291,9 @@ def priority_queue(Q, build_confidence, samples):
     print(week_time_counter)
 
 
-        #print(np.count_nonzero(items_A))
-
-            # print('Order A: hours to build:', order_A_time)
-            # print('Order B: hours to build:', order_B_time)
-            # print('Order C: hours to build:', order_C_time)
-            # print('Order D: hours to build:', order_D_time)
-            # print('Order E: hours to build:', order_E_time)
-            # print('All Orders : hours to build:', (order_A_time + order_B_time + order_C_time + order_D_time + order_E_time))
-
 
 
 #def time():
-orders(0, 2, 10, daily_count_confidence=4, order_size_confidence=4, samples=1)
-#first_come_queue(orders(0, 2, 10, daily_count_confidence=4, order_size_confidence=4, samples=1), build_confidence=4, samples=1)
+#orders(0, 2, 10, daily_count_confidence=4, order_size_confidence=4, samples=1)
+first_come_queue(orders(0, 2, 10, daily_count_confidence=4, order_size_confidence=4, samples=1), build_confidence=4, samples=1)
 #priority_queue(orders(0, 2, 10, daily_count_confidence=4, order_size_confidence=4, samples=1), build_confidnece=4, samples=1)
