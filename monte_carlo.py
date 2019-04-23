@@ -1,6 +1,5 @@
 import numpy as np
-import queue
-
+import pandas as pd
 def pert(low, likely, high, confidence=4, samples=10000):
     """I got this function from Instructor Weible's Lecture Notes"""
     if confidence < 1 or confidence > 18:
@@ -15,18 +14,19 @@ def pert(low, likely, high, confidence=4, samples=10000):
     beta = beta * (high - low) + low
     return beta
 
-
-
-# confidence 2
-# miller & ranom
-
-# what to do about my rounding?
 def orders(low, likely, high, daily_count_confidence, order_size_confidence, samples):
     item_order_options = ['A', 'B', 'C', 'D', 'E']
+    all_orders = []
+    day_counter = 0
 
-    all_items = []
-
-    for i in range(5):
+    column_a = []
+    column_b = []
+    column_c = []
+    column_d = []
+    column_e = []
+    column_day = []
+    for i in range(22):
+        day_counter += 1
         daily_order_count = pert(low, likely, high, confidence=daily_count_confidence, samples=samples)
         daily_order_count = np.around(daily_order_count).astype(int)
         print('daily order count:', daily_order_count)
@@ -35,115 +35,130 @@ def orders(low, likely, high, daily_count_confidence, order_size_confidence, sam
             order_size = pert(1, 2, 15, confidence=order_size_confidence, samples=samples)
             order_size = np.around(order_size).astype(int)
             order_items = np.random.choice(item_order_options, size=order_size, p=[0.1, 0.2, 0.4, 0.2, 0.1])
-            print(order_items, 'day:', i + 1, 'order:', j + 1)
-            all_items.append(order_items)
+            print(order_items, 'day:', day_counter,'order:', j + 1)
+
+            column_day.append(day_counter)
+
+            a_count = order_items[order_items == 'A']
+            a_count = np.count_nonzero(a_count)
+            column_a.append(a_count)
+
+            b_count = order_items[order_items == 'B']
+            b_count = np.count_nonzero(b_count)
+            column_b.append(b_count)
+
+            c_count = order_items[order_items == 'C']
+            c_count = np.count_nonzero(c_count)
+            column_c.append(c_count)
+
+            d_count = order_items[order_items == 'D']
+            d_count = np.count_nonzero(d_count)
+            column_d.append(d_count)
+
+            e_count = order_items[order_items == 'E']
+            e_count = np.count_nonzero(e_count)
+            column_e.append(e_count)
+
+            all_orders.append(order_items)
+
+
+    order_len = list(range(len(all_orders)))
+    df = pd.DataFrame({'Order #': order_len,
+                    'Day': column_day,
+                    'Item A': column_a,
+                    'Item B': column_b,
+                    'Item C': column_c,
+                    'Item D': column_d,
+                    'Item E': column_e})
+    df['Order #'] = df['Order #'] + 1
+    print(df)
+
+    # start = z[0] + 1
+    # stop = z[-1] + 1
+    # order_id = range(start,stop)
+    # for fcq in all_orders:
+    #     t = fcq.tolist()
+    #     all_orders.append(t)
+    # res = dict(zip(order_id, all_orders))
+    # print(res)
 
     print('---')
 
-    return all_items
+    return df
+    # return all_orders
 
 
-def first_come_queue(q, build_confidence, samples):
-    time_counter = 0
-    while time_counter <= 7.5:
-        order_counter = 0
+# def first_come_queue(q, build_confidence, samples):
 
-        for fcq in q:
-            order_counter += 1
-            a_count = fcq[fcq == 'A']
-            a_count = np.count_nonzero(a_count)
+# order_counter = 0
 
-            b_count = fcq[fcq == 'B']
-            b_count = np.count_nonzero(b_count)
-
-            c_count = fcq[fcq == 'C']
-            c_count = np.count_nonzero(c_count)
-
-            d_count = fcq[fcq == 'D']
-            d_count = np.count_nonzero(d_count)
-
-            e_count = fcq[fcq == 'E']
-            e_count = np.count_nonzero(e_count)
-
-            time_list = []
-            machine_time_swap = .25
-            time_counter = 0
-
-            for a in range(a_count):
-                order_a_time = pert(4, 8, 11, confidence=build_confidence, samples=samples)
-                order_a_time = order_a_time + machine_time_swap
-                order_a_time = np.around(order_a_time, decimals=1)
-
-                time_list.append(order_a_time)
-                time_counter += order_a_time
-                # if time_counter >= 7.5:
-                #     print(time_counter)
-                #     print('Work day is over')
-                #     continue
-
-            for b in range(b_count):
-                order_b_time = pert(1, 2, 5, confidence=build_confidence, samples=samples)
-                order_b_time = order_b_time + machine_time_swap
-                order_b_time = np.around(order_b_time, decimals=1)
-                time_list.append(order_b_time)
-                time_counter += order_b_time
-                # if time_counter >= 7.5:
-                #     print(time_counter)
-                #     print('Work day is over')
-                #     continue
-
-            for c in range(c_count):
-                order_c_time = pert(.5, 1, 3, confidence=build_confidence, samples=samples)
-                order_c_time = order_c_time + machine_time_swap
-                order_c_time = np.around(order_c_time, decimals=1)
-                time_list.append(order_c_time)
-                time_counter += order_c_time
-                # if time_counter >= 7.5:
-                #     print(time_counter)
-                #     print('Work day is over')
-                #     continue
-
-            for d in range(d_count):
-                order_d_time = pert(2, 3, 6, confidence=build_confidence, samples=samples)
-                order_d_time = order_d_time + machine_time_swap
-                order_d_time = np.around(order_d_time, decimals=1)
-                time_list.append(order_d_time)
-                time_counter += order_d_time
-                # if time_counter >= 7.5:
-                #     print(time_counter)
-                #     print('Work day is over')
-                #     continue
-
-            for e in range(e_count):
-                order_e_time = pert(5, 7, 10, confidence=build_confidence, samples=samples)
-                order_e_time = order_e_time + machine_time_swap
-                order_e_time = np.around(order_e_time, decimals=1)
-                time_list.append(order_e_time)
-                time_counter += order_e_time
-                # if time_counter >= 7.5:
-                #     print(time_counter)
-                #     print('Work day is over')
-                #     continue
-
-
-            all_item_build_time = np.sum(time_list)
-            all_item_build_time = np.around(all_item_build_time, decimals=1)
-            time_to_make_order = all_item_build_time  # + machine_swap_time
-            time_to_make_order = np.around(time_to_make_order, decimals=1)
-            print('Order', order_counter, ':', fcq, '---', 'Time to make order:', time_to_make_order, 'hours')
-            if time_counter >= 7.5:
-                print(time_counter[0])
-                print('Work day is over.')
-                continue
-
-
-
-
-
-
-
-
-
+    # for fcq in q:
+    #     order_counter += 1
+    #     a_count = fcq[fcq == 'A']
+    #     a_count = np.count_nonzero(a_count)
+    #
+    #     b_count = fcq[fcq == 'B']
+    #     b_count = np.count_nonzero(b_count)
+    #
+    #     c_count = fcq[fcq == 'C']
+    #     c_count = np.count_nonzero(c_count)
+    #
+    #     d_count = fcq[fcq == 'D']
+    #     d_count = np.count_nonzero(d_count)
+    #
+    #     e_count = fcq[fcq == 'E']
+    #     e_count = np.count_nonzero(e_count)
+    #
+    #     time_list = []
+    #     machine_time_swap = 0.5
+    #
+    #     for a in range(a_count):
+    #         order_a_time = pert(4, 8, 11, confidence=build_confidence, samples=samples)
+    #         order_a_time = order_a_time/7.5
+    #         order_a_time = order_a_time + machine_time_swap
+    #         order_a_time = np.around(order_a_time, decimals=1)
+    #
+    #         time_list.append(order_a_time)
+    #
+    #
+    #     for b in range(b_count):
+    #         order_b_time = pert(1, 2, 5, confidence=build_confidence, samples=b_count)
+    #         order_b_time = order_b_time/7.5
+    #         order_b_time = order_b_time + machine_time_swap
+    #         order_b_time = np.around(order_b_time, decimals=1)
+    #         time_list.append(order_b_time)
+    #
+    #
+    #     for c in range(c_count):
+    #         order_c_time = pert(.5, 1, 3, confidence=build_confidence, samples=samples)
+    #         order_c_time = order_c_time/7.5
+    #         order_c_time = order_c_time + machine_time_swap
+    #         order_c_time = np.around(order_c_time, decimals=1)
+    #         time_list.append(order_c_time)
+    #
+    #
+    #     for d in range(d_count):
+    #         order_d_time = pert(2, 3, 6, confidence=build_confidence, samples=samples)
+    #         order_d_time = order_d_time/7.5
+    #         order_d_time = order_d_time + machine_time_swap
+    #         order_d_time = np.around(order_d_time, decimals=1)
+    #         time_list.append(order_d_time)
+    #
+    #
+    #     for e in range(e_count):
+    #         order_e_time = pert(5, 7, 10, confidence=build_confidence, samples=samples)
+    #         order_e_time = order_e_time/7.5
+    #         order_e_time = order_e_time + machine_time_swap
+    #         order_e_time = np.around(order_e_time, decimals=1)
+    #         time_list.append(order_e_time)
+    #
+    #
+    #     all_item_build_time = np.sum(time_list)
+    #     all_item_build_time = np.around(all_item_build_time, decimals=1)
+    #     time_to_make_order = all_item_build_time  # + machine_swap_time
+    #     time_to_make_order = np.around(time_to_make_order, decimals=1)
+    #     time_to_make_order = str(time_to_make_order)
+    #     print('Order', order_counter, ':', fcq, '---', 'Time to make Order. Days:', time_to_make_order[0], 'Hours:', time_to_make_order[2], time_to_make_order)
 
 
 def priority_queue(Q, build_confidence, samples):
@@ -234,6 +249,6 @@ def priority_queue(Q, build_confidence, samples):
 
 
 #def time():
-
-first_come_queue(orders(0, 2, 10, daily_count_confidence=4, order_size_confidence=4, samples=1), build_confidence=4, samples=1)
+orders(0, 2, 10, daily_count_confidence=4, order_size_confidence=4, samples=1)
+#first_come_queue(orders(0, 2, 10, daily_count_confidence=4, order_size_confidence=4, samples=1), build_confidence=4, samples=1)
 #priority_queue(orders(0, 2, 10, daily_count_confidence=4, order_size_confidence=4, samples=1), build_confidnece=4, samples=1)
