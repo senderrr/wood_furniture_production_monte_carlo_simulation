@@ -73,6 +73,7 @@ def orders(low, likely, high, daily_count_confidence, order_size_confidence, sam
     df['Order #'] = df['Order #'] + 1
     print(df)
 
+    # dictionary version
     # start = z[0] + 1
     # stop = z[-1] + 1
     # order_id = range(start,stop)
