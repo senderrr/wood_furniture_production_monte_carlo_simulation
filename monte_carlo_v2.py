@@ -1,6 +1,50 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import warnings
+
+
+def main():
+    warnings.filterwarnings('ignore', category=RuntimeWarning)
+
+    fcfs_wait_time_list = []
+    stock_wait_time_list = []
+    stock_build_time_list = []
+    stock_order_size_list = []
+
+    for s in range(1):
+        generate_orders = orders(0, 3, 7, daily_count_confidence=4, order_size_confidence=4, samples=1)
+        fcq = first_come_queue(generate_orders, machine_time_swap=0.5, build_confidence=4)
+
+    #     fcfs_wait_time = fcq['Wait Time']
+    #     fcfs_wait_time_list.append(fcfs_wait_time)
+    # fcfs_mean_wait_time = np.mean(fcfs_wait_time_list)
+    # print('Average customer wait time:', fcfs_wait_time_list)
+
+        inventory_queue = inventory_first_come_queue(generate_orders, machine_time_swap=0.5, build_confidence=4,
+                                                      a_stock=6, b_stock=6, c_stock=8, d_stock=6, e_stock=3)
+
+        average_wait_time = inventory_queue['Wait Time']
+        stock_wait_time_list.append(average_wait_time)
+
+        average_build_time = np.mean(inventory_queue['Build Time'])
+        stock_build_time_list.append(average_build_time)
+
+        average_order_num = len(inventory_queue)
+        stock_order_size_list.append(average_order_num)
+
+    mean_wait_time = stock_wait_time_list
+    #print('Average customer wait time:', mean_wait_time)
+    # print('Stock wait time list:', stock_wait_time_list)
+
+    mean_build_time = np.mean(stock_build_time_list)
+    #print('Average order Build time:', mean_build_time)
+
+    stock_order_size_list = np.mean(stock_order_size_list)
+    #print('Average order size per month:', stock_order_size_list)
+
+    plt.hist(stock_wait_time_list, bins=100)
+    #plt.show()
 
 
 def pert(low, likely, high, confidence=4, samples=10000):
@@ -34,13 +78,13 @@ def orders(low, likely, high, daily_count_confidence, order_size_confidence, sam
         day_counter += 1
         daily_order_count = pert(low, likely, high, confidence=daily_count_confidence, samples=samples)
         daily_order_count = np.around(daily_order_count).astype(int)
-        print('daily order count:', daily_order_count)
+        #print('daily order count:', daily_order_count)
 
         for j in range(daily_order_count[0]):
             order_size = pert(1, 8, 15, confidence=order_size_confidence, samples=samples)
             order_size = np.around(order_size).astype(int)
             order_items = np.random.choice(item_order_options, size=order_size, p=[0.3, 0.1, 0.3, 0.2, 0.1])
-            print(order_items, 'day:', day_counter, 'order:', j + 1)
+            #print(order_items, 'day:', day_counter, 'order:', j + 1)
 
             column_day.append(day_counter)
 
@@ -75,15 +119,16 @@ def orders(low, likely, high, daily_count_confidence, order_size_confidence, sam
     return df
 
 
-def build_time(array, machine_time_swap, low, likely, high, confidence):
-    item_count = array
+def build_time(item_list, machine_time_swap, low, likely, high, confidence):
+    item_count = item_list.astype('int')
     item_hours = pert(low, likely, high, confidence=confidence, samples=item_count)
     item_hours = np.sum(item_hours)
     if item_hours != 0:
         item_hours = item_hours + machine_time_swap
-    item_hours = item_hours          # change days to hours; wait time/ pick up day (floor, ceiling round; modulus); 2 shifts; first come queue with inventory
+    item_hours = item_hours
     item_hours = np.around(item_hours, decimals=1)
     return item_hours
+
 
 def first_come_queue(df, machine_time_swap, build_confidence):
     item_a_list = []
@@ -91,9 +136,9 @@ def first_come_queue(df, machine_time_swap, build_confidence):
     item_c_list = []
     item_d_list = []
     item_e_list = []
-
+    first_come_df = df.copy(deep=True)
     # https://stackoverflow.com/questions/16476924/how-to-iterate-over-rows-in-a-dataframe-in-pandas
-    for index, row in df.iterrows():
+    for index, row in first_come_df.iterrows():
         item_a_count = row['Item A']
         item_b_count = row['Item B']
         item_c_count = row['Item C']
@@ -115,30 +160,36 @@ def first_come_queue(df, machine_time_swap, build_confidence):
         item_e_time = build_time(item_e_count, machine_time_swap, 4, 5, 6, confidence=build_confidence)
         item_e_list.append(item_e_time)
 
-    df['A T'] = item_a_list
-    df['B T'] = item_b_list
-    df['C T'] = item_c_list
-    df['D T'] = item_d_list
-    df['E T'] = item_e_list
+    first_come_df['A T'] = item_a_list
+    first_come_df['B T'] = item_b_list
+    first_come_df['C T'] = item_c_list
+    first_come_df['D T'] = item_d_list
+    first_come_df['E T'] = item_e_list
 
-    df['Build Time'] = df['A T'] + df['B T'] + df['C T'] + df['D T'] + df['E T']
-    df['Pick Up Day'] = np.ceil((df['Build Time'].cumsum(axis=0)) / 7.5)
-    df['Wait Time'] = df['Pick Up Day'] - df['Day'] + 1
+    first_come_df['Build Time'] = first_come_df['A T'] + first_come_df['B T'] + first_come_df['C T'] + first_come_df['D T'] + first_come_df['E T']
+    first_come_df['Pick Up Day'] = np.ceil((first_come_df['Build Time'].cumsum(axis=0)) / 7.5)
+    first_come_df['Wait Time'] = first_come_df['Pick Up Day'] - first_come_df['Day'] + 1
 
-    print(df)
-    return df
+    #print(first_come_df)
+    return first_come_df
 
 
 def inventory_first_come_queue(df, machine_time_swap,  build_confidence, a_stock, b_stock, c_stock, d_stock, e_stock):
-    stock_df = df
-
-    # inventory_df['A Stock Needed'] = inventory_df['Item A'] - a_stock
-    # inventory_df['Build Item A'] = inventory_df['A Stock Needed'] + a_stock
-    # inventory_df['Current Stock A'] = inventory_df['Build Item A'] - inventory_df['A Stock Needed']
-
-    stock_df['Surplus A Stock'] = a_stock - stock_df['Item A']
-    stock_df['Build Item A'] = abs(a_stock - stock_df['Surplus A Stock'])
-    stock_df['Stock A Quantity'] = stock_df['Build Item A'] + stock_df['Surplus A Stock']
+    stock_df = df.copy(deep=True)
+    # stock_df['cumsum A'] = stock_df['Item A'].cumsum(axis=0)
+    stock_df['start stock'] = 0
+    stock_df['Surplus A Stock'] = a_stock - stock_df.groupby('Day')['Item A'].cumsum(axis=0)
+    #stock_df['diff'] = stock_df.groupby(['Day'])['Surplus A Stock'].diff()
+    stock_df['start stoc'] = stock_df.groupby('Day')['Surplus A Stock'].shift(1).fillna(a_stock).astype('int')
+    #stock_df['Build Item A'] = np.where(stock_df['Surplus A Stock'] >= 1, 0, stock_df['Item A'])
+    stock_df['Build Item A'] = np.where(stock_df['Surplus A Stock'] >= 1, 0,
+                                        np.where(stock_df['start stoc'] >= 1,
+                                                 stock_df['Item A'] - stock_df['start stoc'], stock_df['Item A']))
+    stock_df['Surplus A Stock'] = np.where(stock_df['Surplus A Stock'] < 0, 0, stock_df['Surplus A Stock'])
+    stock_df['Restock A'] = stock_df.groupby('Day')['Surplus A Stock'].tail(1)
+    stock_df['Restock A'] = a_stock - stock_df['Restock A']
+    stock_df['Restock A'] = stock_df['Restock A'].fillna(0)
+    stock_df['test'] = stock_df['Build Item A'] + stock_df['Restock A']
 
     stock_df['Surplus B Stock'] = b_stock - stock_df['Item B']
     stock_df['Build Item B'] = abs(b_stock - stock_df['Surplus B Stock'])
@@ -156,23 +207,20 @@ def inventory_first_come_queue(df, machine_time_swap,  build_confidence, a_stock
     stock_df['Build Item E'] = abs(e_stock - stock_df['Surplus E Stock'])
     stock_df['Stock E Quantity'] = stock_df['Build Item E'] + stock_df['Surplus E Stock']
 
-
-    # inventory_df['A to Fulfil Order'] = a_stock - inventory_df['Item A']
-    # inventory_df['Build Item A'] = inventory_df['A to Fulfil Order'] + a_stock
-    # inventory_df['Current Stock A'] = inventory_df['Build Item A'] - inventory_df['A to Fulfil Order']
-
     item_a_list = []
     item_b_list = []
     item_c_list = []
     item_d_list = []
     item_e_list = []
 
-    for index, row in df.iterrows():
-        item_a_count = row['Item A']
-        item_b_count = row['Item B']
-        item_c_count = row['Item C']
-        item_d_count = row['Item D']
-        item_e_count = row['Item E']
+    item_a_counter = 0
+    for index, row in stock_df.iterrows():
+
+        item_a_count = row['Build Item A']
+        item_b_count = row['Build Item B']
+        item_c_count = row['Build Item C']
+        item_d_count = row['Build Item D']
+        item_e_count = row['Build Item E']
 
         item_a_time = build_time(item_a_count, machine_time_swap, 1, 3, 4, confidence=build_confidence)
         item_a_list.append(item_a_time)
@@ -195,37 +243,19 @@ def inventory_first_come_queue(df, machine_time_swap,  build_confidence, a_stock
     stock_df['D T'] = item_d_list
     stock_df['E T'] = item_e_list
 
-    stock_df['Build Time'] = stock_df['A T'] + stock_df['B T'] + stock_df['C T'] + stock_df['D T'] + stock_df['E T']
+    stock_df['Build Time'] = stock_df['A T'] #+ stock_df['B T'] + stock_df['C T'] + stock_df['D T'] + stock_df['E T']
     stock_df['Pick Up Day'] = np.ceil((stock_df['Build Time'].cumsum(axis=0) / 7.5))
     stock_df['Wait Time'] = stock_df['Pick Up Day'] - stock_df['Day'] + 1
 
-    print(stock_df)
+    preview = stock_df[['Order #', 'Day', 'Item A', 'start stoc', 'Surplus A Stock',
+                        'Build Item A', 'test', 'Restock A','A T', 'Build Time', 'Pick Up Day', 'Wait Time']]
+    print(preview)
+    # print(stock_df)
     return stock_df
 
 
 desired_width = 500
 pd.set_option('display.width', desired_width)
-pd.set_option('display.max_columns', 18)
-
-
-def main():
-    for s in range(10):
-        
-        generate_orders = orders(0, 3, 7, daily_count_confidence=4, order_size_confidence=4, samples=1)
-        # first_come_queue(generate_orders, machine_time_swap=0.5, build_confidence=4)
-        inventory = inventory_first_come_queue(generate_orders, machine_time_swap=0.5, build_confidence=4, a_stock=6,
-                                               b_stock=6, c_stock=8, d_stock=6, e_stock=3)
-        average_wait_time = inventory['Wait Time'].tail(1)
-        average_wait_time = np.mean(average_wait_time)
-
-        print(average_wait_time)
-
+pd.set_option('display.max_columns', 30)
 
 main()
-
-
-# stock_inventory = {'Stock A': [2], 'Stock B': [2], 'Stock C': [3], 'Stock D': [2], 'Stock E': 1}
-# inventory_df = pd.DataFrame(data=inventory, columns=['Stock A', 'Stock B', 'Stock C', 'Stock D', 'Stock E'])
-# inventory_df = inventory_df.reset_index()
-# inventory_df = pd.concat([inventory_df, df], axis=1)
-# inventory_df = inventory_df.fillna(0)
