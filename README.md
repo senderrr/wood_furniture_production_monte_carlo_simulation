@@ -2,7 +2,7 @@
 
 ## Team Members: Alex Wieker
 
-## Monte Carlo Simulation Scenario & Purpose: 
+## Monte Carlo Simulation Summary: 
 In this simulation, I will be simulating two scenarios for a small manufactory that produces wooden furniture in order to determine which of the scenarios makes the furniture available to their customers faster. Since it takes time to swap between machinary to make different items, and since  this small manufactory has limited machines and workers, orders are completed item by item. In order to prevent as many customers as possible from cancelling their orders,  the goal of this simulation is  to determine which of the scenarios will produce less waiting time between ordering and receiving their orders for their customers. In my scenarios, I am starting  day 1 as the first work day, and they begin to work on orders that were processed from the day  before.  Hence, all customers wait at least one day froms sending the other and their order being available. Lastly, the simulation will compare the same  set of orders for both scenarios. The goal is to determine which queue will result in customers receiving their orders faster because if their is a huge pipeline, orders will be cancelled.
  
 Scenario 1: First Come First Queue:
@@ -46,7 +46,7 @@ Scenario 2: Stock Inventory Queue:
 ## Hypothesis: 
 I hypothesize that the inventory stock queue will result in orders have less wait time between the order customer making the order and the order being built than the first come first servue queue.  
 
-## Findings: 
+## Results: 
 
 ## Instructions on how to use the program:
 
