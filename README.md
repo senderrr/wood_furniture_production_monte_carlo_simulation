@@ -7,3 +7,10 @@ In this simulation, I will be simulating if daily orders are completed in a time
 
 ## Hypothesis: 
 I hypothesize that the inventory stock queue will result in orders have less wait time between the order customer making the order and the order being built than the first come first servue queue.  
+
+## Analytical Summary of your findings: (e.g. Did you adjust the scenario based on previous simulation outcomes? What are the management decisions one could make from your simulation's output, etc.)
+
+## Instructions on how to use the program:
+
+
+## Github File Descriptions:
