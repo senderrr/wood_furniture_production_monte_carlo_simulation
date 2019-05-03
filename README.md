@@ -28,6 +28,18 @@ Scenario 1: First Come First Queue:
 • Machinary Swap time: how long it takes to swap between machinary. 
 
 Scenario 2: Stock Inventory Queue:
+• How many work days are we simulating: 22, rounded up the average US work days in a month. 
+
+• How many orders are received each day: PERT distribution 
+• Order size: PERT distribution 
+
+• What items are in orders: NP.random.choice
+
+• Time to build item in order: PERT distributition
+
+• Machinary Swap time: how long it takes to swap between machinary.
+
+• How much stock inventory should be available at the start of each day for each item: static variable based on user input in the form of a_stock, b_stock, c_stock,  d_stock, and e_stock.
 
 ## Hypothesis: 
 I hypothesize that the inventory stock queue will result in orders have less wait time between the order customer making the order and the order being built than the first come first servue queue.  
