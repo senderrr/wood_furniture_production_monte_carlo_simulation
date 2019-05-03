@@ -9,7 +9,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import warnings
 
-pd.set_option('display.max_columns', 30)
 
 
 def main(num_of_samples):
@@ -17,6 +16,7 @@ def main(num_of_samples):
     22 days, and then puts that set of orders into the first_come_queue and stock_inventory_que 1,000 times. After
     the simulation is run 1,000 times this function outputs aggregate statistics and two histogram distributions, one
     for each of the different type of scenarios being run in the simulation.
+
     :param num_of_samples: This sets how many times to run the simulation.
     """
 
@@ -267,14 +267,67 @@ def first_come_queue(df, machine_time_swap, build_confidence):
     # Added plus one to account for the customer ordering one day before the order was started in the manufactory.
     first_come_df['Wait Time'] = first_come_df['Pick Up Day'] + 1
 
-    #print(first_come_df.head())
+    # print(first_come_df)
 
     return first_come_df
 
 
+def build_stock_inventory(df, stock, item_column, start_stock, surplus_stock, build_item, restock):
+    """ This function takes a DataFrame  for the stock_inventory_queue and determines when or how many items need to be
+    pulled from the stock inventory to fulfill an order, and it also determines when to build additional items, in order
+    to fulfill an order that requires more than there are items in the stock inventory or to restock it.
+
+    :param df: This is the DataFrame that will be used to subset each of the items and to determine how many items
+            need to build and when to fulfill orders or restock the stock inventory.
+    :param stock: This is how much stock the manufactory holds at the start of a day of a given item, such as a_stock.
+    :param item_column: This is the column of items
+    :param start_stock: This a column that will be created for each item that describes starting stock inventory quantity.
+    :param surplus_stock: This a column that will be created for each item that describes how much inventory there is
+                        for each item after items have been pulled to fulfill orders.
+    :param build_item: This is a column that will be created for each item
+                    that describes how many items need to be built and when.
+    :param restock: This is a column that will be created for each item that says how many items need to be made
+                    at the end of the day to restock the stock inventory.
+    :return build_item_column: This is a column that will be created that describes when and how many items
+                            need to be built to fulfill each order that comes in or to restock the stock inventory.
+
+    Note on calling function:
+    All parameters in the function except for the initial DataFrame and stock parameter must be strings.
+
+    IF you want to see how this function works, but on a smaller scale, uncomment the stock_preview in the
+    stock_inventory_queue function, which will give a preview on only item A.
+
+    Note on surplus stock parameter: Surplus stock was used as a means to an end. Since I had to make negative numbers
+    zero, in order to get accurate restock number. It has no negative effect on the simulation because all negative
+    numbers in this column have the same value as any other negative number in the simulation.
+    Additionally, I changed the value to zero after I was already using it.
+    Hence, when it is turned to zero, it is only used to calculate the restock column.
+
+    Note on restock parameter: Lastly, I am simulating that restocking take place for the last order items are build
+    directly for the customer as they come, and then restocked at the end of the day
+
+    I adopted code from the following URL's as a resource to iterate over DataFrame rows:
+    https://stackoverflow.com/questions/39109045/numpy-where-with-multiple-conditions/39111919
+    """
+    df[start_stock] = 0
+    df[surplus_stock] = stock - df.groupby('Day')[item_column].cumsum(axis=0)
+    # set stock to input stock value
+    df[start_stock] = df.groupby('Day')[surplus_stock].shift(1).fillna(stock).astype('int')
+    # How many items needed to be built to fulfil and/or restock inventory
+    df[build_item] = np.where(df[surplus_stock] >= 1, 0, np.where(df[start_stock] >= 1,
+                                                                  df[item_column] - df[start_stock], df[item_column]))
+    df[surplus_stock] = np.where(df[surplus_stock] < 0, 0, df[surplus_stock])
+    df[restock] = df.groupby('Day')[surplus_stock].tail(1)
+    df[restock] = stock - df[restock]
+    df[restock] = df[restock].fillna(0)
+    df[build_item] = df[build_item] + df[restock]
+    build_item_column = df[build_item]
+    return build_item_column
+
+
 def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_stock, c_stock, d_stock, e_stock):
     """This function takes an input DataFrame (of orders), calculates how long it takes to build each of the orders, and
-    then calculates how long customers are waiting for their order to  be available.
+    then calculates how long customers are waiting for their order to be available.
 
     :param df: This is the DataFrame from the orders function, which is the set of orders being run in the simulation.
     :param machine_time_swap: This is used for the build_time function for time to swap machines.
@@ -289,84 +342,24 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
 
     I adopted code from the following URL's as a resource to iterate over DataFrame rows:
     https://stackoverflow.com/questions/16476924/how-to-iterate-over-rows-in-a-dataframe-in-pandas
-    https://stackoverflow.com/questions/39109045/numpy-where-with-multiple-conditions/39111919
     """
 
     stock_df = df.copy(deep=True)
 
-    # Start Stock x: How much inventory the manufactory has of the item
-    stock_df['Start Stock A'] = 0
-    # Surplus Stock: How much stock there is after taking items from stock inventory to fulfill order
-    stock_df['Surplus A Stock'] = a_stock - stock_df.groupby('Day')['Item A'].cumsum(axis=0)
-    # set stock to input stock value
-    stock_df['Start Stock A'] = stock_df.groupby('Day')['Surplus A Stock'].shift(1).fillna(a_stock).astype('int')
-    # How many items needed to be built to fulfil and/or restock inventory
-    stock_df['Build Item A'] = np.where(stock_df['Surplus A Stock'] >= 1, 0,
-                                        np.where(stock_df['Start Stock A'] >= 1,
-                                                 stock_df['Item A'] - stock_df['Start Stock A'], stock_df['Item A']))
+    stock_df['Build Item A'] = build_stock_inventory(stock_df, a_stock, 'Item A', 'Start Stock A', 'Surplus A Stock',
+                                                     'Build Item A', 'Restock A')
 
-    # Take note that Surplus x stock was used as a means to an end. Since I had to make negative numbers zero,
-    # in order to get accurate restock num. It has no negative effect on the simulation because all negative numbers
-    # in the simulation have the same value as any other negative number. Additionally, I changed the value to zero
-    # after I was already using it. Hence, when it is turned to zero, it is only used to calculate the restock column.
-    # Lastly, I am simulating that restocking take place for the last order  items are build directly for the customer as they come, and then
-    # restocked at the end of the day
-    stock_df['Surplus A Stock'] = np.where(stock_df['Surplus A Stock'] < 0, 0, stock_df['Surplus A Stock'])
-    stock_df['Restock A'] = stock_df.groupby('Day')['Surplus A Stock'].tail(1)
-    stock_df['Restock A'] = a_stock - stock_df['Restock A']
-    stock_df['Restock A'] = stock_df['Restock A'].fillna(0)
-    # apply restock to next day order; Even though the restock is done after each day, the last day customer is able
-    # to get their order before the restocking is completed, and the next day orders do not start until restock is done
+    stock_df['Build Item B'] = build_stock_inventory(stock_df, b_stock, 'Item B', 'Start Stock B', 'Surplus B Stock',
+                                                     'Build Item B', 'Restock B')
 
-    stock_df['Build Item A'] = stock_df['Build Item A'] + stock_df['Restock A']
+    stock_df['Build Item C'] = build_stock_inventory(stock_df, c_stock, 'Item C', 'Start Stock C', 'Surplus C Stock',
+                                                     'Build Item C', 'Restock C')
 
-    stock_df['Start Stock B'] = 0
-    stock_df['Surplus B Stock'] = b_stock - stock_df.groupby('Day')['Item B'].cumsum(axis=0)
-    stock_df['Start Stock B'] = stock_df.groupby('Day')['Surplus B Stock'].shift(1).fillna(b_stock).astype('int')
-    stock_df['Build Item B'] = np.where(stock_df['Surplus B Stock'] >= 1, 0,
-                                        np.where(stock_df['Start Stock B'] >= 1,
-                                                 stock_df['Item B'] - stock_df['Start Stock B'], stock_df['Item B']))
-    stock_df['Surplus B Stock'] = np.where(stock_df['Surplus B Stock'] < 0, 0, stock_df['Surplus B Stock'])
-    stock_df['Restock B'] = stock_df.groupby('Day')['Surplus B Stock'].tail(1)
-    stock_df['Restock B'] = b_stock - stock_df['Restock B']
-    stock_df['Restock B'] = stock_df['Restock B'].fillna(0)
-    stock_df['Build Item B'] = stock_df['Build Item B'] + stock_df['Restock B']
+    stock_df['Build Item D'] = build_stock_inventory(stock_df, d_stock, 'Item D', 'Start Stock D', 'Surplus D Stock',
+                                                     'Build Item D', 'Restock D')
 
-    stock_df['Start Stock C'] = 0
-    stock_df['Surplus C Stock'] = c_stock - stock_df.groupby('Day')['Item C'].cumsum(axis=0)
-    stock_df['Start Stock C'] = stock_df.groupby('Day')['Surplus C Stock'].shift(1).fillna(c_stock).astype('int')
-    stock_df['Build Item C'] = np.where(stock_df['Surplus C Stock'] >= 1, 0,
-                                        np.where(stock_df['Start Stock C'] >= 1,
-                                                 stock_df['Item C'] - stock_df['Start Stock C'], stock_df['Item C']))
-    stock_df['Surplus C Stock'] = np.where(stock_df['Surplus C Stock'] < 0, 0, stock_df['Surplus C Stock'])
-    stock_df['Restock C'] = stock_df.groupby('Day')['Surplus C Stock'].tail(1)
-    stock_df['Restock C'] = c_stock - stock_df['Restock C']
-    stock_df['Restock C'] = stock_df['Restock C'].fillna(0)
-    stock_df['Build Item C'] = stock_df['Build Item C'] + stock_df['Restock C']
-
-    stock_df['Start Stock D'] = 0
-    stock_df['Surplus D Stock'] = d_stock - stock_df.groupby('Day')['Item D'].cumsum(axis=0)
-    stock_df['Start Stock D'] = stock_df.groupby('Day')['Surplus D Stock'].shift(1).fillna(d_stock).astype('int')
-    stock_df['Build Item D'] = np.where(stock_df['Surplus D Stock'] >= 1, 0,
-                                        np.where(stock_df['Start Stock D'] >= 1,
-                                                 stock_df['Item D'] - stock_df['Start Stock D'], stock_df['Item D']))
-    stock_df['Surplus D Stock'] = np.where(stock_df['Surplus D Stock'] < 0, 0, stock_df['Surplus D Stock'])
-    stock_df['Restock D'] = stock_df.groupby('Day')['Surplus D Stock'].tail(1)
-    stock_df['Restock D'] = d_stock - stock_df['Restock D']
-    stock_df['Restock D'] = stock_df['Restock D'].fillna(0)
-    stock_df['Build Item D'] = stock_df['Build Item D'] + stock_df['Restock D']
-
-    stock_df['Start Stock E'] = 0
-    stock_df['Surplus E Stock'] = e_stock - stock_df.groupby('Day')['Item E'].cumsum(axis=0)
-    stock_df['Start Stock E'] = stock_df.groupby('Day')['Surplus E Stock'].shift(1).fillna(e_stock).astype('int')
-    stock_df['Build Item E'] = np.where(stock_df['Surplus E Stock'] >= 1, 0,
-                                        np.where(stock_df['Start Stock E'] >= 1,
-                                                 stock_df['Item E'] - stock_df['Start Stock E'], stock_df['Item E']))
-    stock_df['Surplus E Stock'] = np.where(stock_df['Surplus E Stock'] < 0, 0, stock_df['Surplus E Stock'])
-    stock_df['Restock E'] = stock_df.groupby('Day')['Surplus E Stock'].tail(1)
-    stock_df['Restock E'] = e_stock - stock_df['Restock E']
-    stock_df['Restock E'] = stock_df['Restock E'].fillna(0)
-    stock_df['Build Item E'] = stock_df['Build Item E'] + stock_df['Restock E']
+    stock_df['Build Item E'] = build_stock_inventory(stock_df, e_stock, 'Item E', 'Start Stock E', 'Surplus E Stock',
+                                                     'Build Item E', 'Restock E')
 
     item_a_list = []
     item_b_list = []
@@ -411,9 +404,13 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
     # Added plus one to account for the customer ordering one day before the order was started in the manufactory.
     stock_df['Wait Time'] = stock_df['Pick Up Day'] + 1
 
-    #print(stock_df.head())
+    pd.set_option('display.expand_frame_repr', False)
 
+    # preview the calculations that determine how much and when to build items for this queue
+    stock_preview = stock_df[['Order #', 'Day', 'Item A', 'Start Stock A', 'Surplus A Stock',
+                              'Build Item A', 'Restock A', 'Build A Hours']]
+    print(stock_preview)
     return stock_df
 
 
-main(num_of_samples=1)
+main(num_of_samples=1000)
