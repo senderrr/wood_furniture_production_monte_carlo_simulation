@@ -46,7 +46,7 @@ def main(num_of_samples):
     plt.xlabel('Wait Time')
     plt.ylabel('Count')
     plt.title('First Come First Serve Wait Time Queue Distribution')
-    #plt.savefig('First Come First Serve Wait Time Queue Distribution.png')
+    # plt.savefig('First Come First Serve Wait Time Queue Distribution.png')
     plt.show()
 
     print('----')
@@ -61,7 +61,7 @@ def main(num_of_samples):
     plt.xlabel('Wait Time')
     plt.ylabel('Count')
     plt.title('Stock Inventory Wait Time Queue Distribution')
-    #plt.savefig('Stock Inventory Wait Time Queue Distribution.png')
+    # plt.savefig('Stock Inventory Wait Time Queue Distribution.png')
     plt.show()
 
 
