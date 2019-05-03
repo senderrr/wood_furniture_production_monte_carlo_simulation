@@ -309,6 +309,7 @@ def build_stock_inventory(df, stock, item_column, start_stock, surplus_stock, bu
     I adopted code from the following URL's as a resource to iterate over DataFrame rows:
     https://stackoverflow.com/questions/39109045/numpy-where-with-multiple-conditions/39111919
     """
+    
     df[start_stock] = 0
     df[surplus_stock] = stock - df.groupby('Day')[item_column].cumsum(axis=0)
     # set stock to input stock value
