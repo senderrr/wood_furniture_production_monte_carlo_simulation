@@ -71,6 +71,8 @@ monte_carlo_v1.py: Initial py files of my first simulation scenario, but I have 
 
 monte_carlo_v2.py: Updated py files of the current simulation.
 
+old_stock_inventory_code.py: This file contains old code that I used to create my build_stock_inventory function.
+
 First Come First Serve Wait Time Queue Distribution.png: Scenario 1 First Come First Queue Simulation Distribution Histogram
 
 Stock Inventory Wait Time Queue Distribution.png: Scenario 2 Stock Inventory Queue Distribution Histogram
