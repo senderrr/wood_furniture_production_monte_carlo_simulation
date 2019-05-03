@@ -14,10 +14,10 @@ pd.set_option('display.max_columns', 30)
 
 def main(num_of_samples):
     """This function runs the orders function to generate an order that is the rounded up US average work day per month,
-    22 days, and then puts that set of orders into the first_come_queue and stock_inventory_que 10,000 times. After
-    the simulation is run 10,000 times this function outputs aggregate statistics and two histogram distributions, one
+    22 days, and then puts that set of orders into the first_come_queue and stock_inventory_que 1,000 times. After
+    the simulation is run 1,000 times this function outputs aggregate statistics and two histogram distributions, one
     for each of the different type of scenarios being run in the simulation.
-    :param num_of_samples: This is an input parameter to set how many times to run the simulation.
+    :param num_of_samples: This sets how many times to run the simulation.
     """
 
     warnings.filterwarnings('ignore', category=RuntimeWarning)
@@ -46,7 +46,6 @@ def main(num_of_samples):
     plt.xlabel('Wait Time')
     plt.ylabel('Count')
     plt.title('First Come First Serve Wait Time Queue Distribution')
-    # plt.savefig('First Come First Serve Wait Time Queue Distribution.png')
     plt.show()
 
     print('----')
@@ -61,20 +60,21 @@ def main(num_of_samples):
     plt.xlabel('Wait Time')
     plt.ylabel('Count')
     plt.title('Stock Inventory Wait Time Queue Distribution')
-    # plt.savefig('Stock Inventory Wait Time Queue Distribution.png')
     plt.show()
 
 
 def pert(low, likely, high, confidence=4, samples=10000):
-    """
-    I got this function from Instructor Weible's Lecture Notes
+    """ This function creates randoms numbers via the PERT distribution.
 
-    :param low: This input parameter is the lowest expected value.
-    :param likely: This input parameter is the most likely expected value or mode
-    :param high: This input parameter is the highest expectedvalue.
-    :param confidence:
-    :param samples:
-    :return beta:
+    :param low: This is the lowest expected value.
+    :param likely: This is the most likely expected value or mode
+    :param high: This is the highest expected value.
+    :param confidence: This is 'lambda,' or how confident one is about the input range (low, likely, high).
+    :param samples: How many samples to take in the PERT distribution.
+    :return beta: The random number that is returned from this function.
+
+    I got this function from Instructor Weible's Lecture Notes:
+    https://github.com/iSchool-590PR-2019-Spring/examples_from_class/blob/master/class12_Prob_Distributions.ipynb
     """
 
     if confidence < 1 or confidence > 18:
@@ -91,14 +91,18 @@ def pert(low, likely, high, confidence=4, samples=10000):
 
 
 def orders(low, likely, high, daily_count_confidence, order_size_confidence, samples):
-    """
-    :param low: This input variable is the lowest expected value, and will be called for the pert function.
-    :param likely: This input variable is the most likely expected value or mode, and it will be used for the pert function.
-    :param high: This input variable is the highest expected value, and will be used for the pert function.
-    :param daily_count_confidence: This is an input parameter for setting confidence in knowing daily order count.
-    :param order_size_confidence: This is an input parameter for setting confidence in knowing order size.
-    :param samples: This is an input parameter for setting how many samples to run in the PERT function.
+    """ This function uses the PERT distribution function and
+    the np.random.choice function to create a set of random orders for a rounded average US work month, and outputs it
+    in the form  of a DataFrame to be called later in the simulation for both types of scenarios.
+
+    :param low: This is the lowest expected value, and will be called for the pert function.
+    :param likely: This is the most likely expected value or mode, and it will be used for the pert function.
+    :param high: This is the highest expected value, and will be used for the pert function.
+    :param daily_count_confidence: This is 'lambda,' or how confidence in knowing daily order count PERT range.
+    :param order_size_confidence: This is 'lambda,' or how confidence in knowing order size PERT range.
+    :param samples: How many samples to take in the PERT distribution.
     :return df: This function returns a DataFrame, which will be called in later functions
+
     >>> generate_test_orders = orders(0, 3, 7, daily_count_confidence=4, order_size_confidence=4, samples=1)
     >>> type(generate_test_orders)
     <class 'pandas.core.frame.DataFrame'>
@@ -164,13 +168,16 @@ def orders(low, likely, high, daily_count_confidence, order_size_confidence, sam
 def build_time(item_list, machine_time_swap, low, likely, high, confidence):
     """This function takes an input list, calls the pert function that list to calculate how long it takes to build
     all of the items in the list, and then returns the calculated series.
-    :param item_list: This input variable is a list of item counts.
-    :param machine_time_swap: This input variable is how long it takes to swap machines.
-    :param low: This input variable is the lowest expected value, and will be called for the pert function.
-    :param likely: This input variable is the most likely expected value or mode, and it will be used for the pert function.
-    :param high: This input variable is the expected highest, and will be used for the pert function.
-    :param confidence: This is an input parameter for setting confidence in knowing the PERT distribution range.
+
+    :param item_list: This is a list of item counts.
+    :param machine_time_swap: This is how long it takes to swap machines.
+    :param low: This is the lowest expected value, and will be called for the pert function,
+                and will be called for the pert function.
+    :param likely: This is the most likely expected value or mode, and it will be used for the pert function.
+    :param high: This is the highest expected value, and will be used for the pert function.
+    :param confidence: This is 'lambda,' or how confidence in knowing the PERT distribution range.
     :return item_hours: This function returns a list of how long it takes to build each of the items from item_list.
+
     >>> test_df = pd.DataFrame({'Item A': [1, 3, 2, 2, 5, 6, 7, 10]})
     >>> item_list = test_df['Item A']
     >>> type(item_list)
@@ -193,13 +200,16 @@ def build_time(item_list, machine_time_swap, low, likely, high, confidence):
 def first_come_queue(df, machine_time_swap, build_confidence):
     """This function takes an input DataFrame (of orders), calculates how long it takes to build each of the orders, and
     then calculates how long customers are waiting for their order to  be available.
-    :param df: This is an input DataFrame from the orders function, which is the set of orders being run in the simulation.
-    :param machine_time_swap: This is an input parameter to pass to the build_time function for time to swap machines.
-    :param build_confidence: This is an input parameter to pass to the build_time function to set item build confidence.
+
+    :param df: This is the DataFrame from the orders function, which is the set of orders being run in the simulation.
+    :param machine_time_swap: This is used for the build_time function for time to swap machines.
+    :param build_confidence: This is 'lambda,' or how confidence in knowing the PERT distribution range, and
+                            it is passed to the build_time function to set item build confidence.
     :return first_come_df: This function returns this DataFrame, which is the completed first_come_queue.
 
     I adopted code from the following URL as a resource to iterate over DataFrame rows:
     https://stackoverflow.com/questions/16476924/how-to-iterate-over-rows-in-a-dataframe-in-pandas
+
     >>> test_df = pd.DataFrame({'Item A': [1, 3, 2], 'Item B': [1, 2, 4], 'Item C': [3, 0, 2],
     ...     'Item D': [2, 1, 5], 'Item E': [5, 2, 0]})
     >>> test_df
@@ -265,17 +275,21 @@ def first_come_queue(df, machine_time_swap, build_confidence):
 def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_stock, c_stock, d_stock, e_stock):
     """This function takes an input DataFrame (of orders), calculates how long it takes to build each of the orders, and
     then calculates how long customers are waiting for their order to  be available.
-    :param df: This is an input DataFrame from the orders function, which is the set of orders being run in the simulation.
-    :param machine_time_swap: This is an input parameter to pass to the build_time function for time to swap machines.
-    :param build_confidence: This is an input parameter to pass to the build_time function to set item build confidence
-    :param a_stock: This input parameter for sets how much Item A stock should be available before orders come in.
-    :param b_stock: This input parameter for sets how much Item B stock should be available before orders come in.
-    :param c_stock: This input parameter for sets how much Item C stock should be available before orders come in.
-    :param d_stock: This input parameter for sets how much Item D stock should be available before orders come in.
-    :param e_stock: This input parameter for sets how much Item D stock should be available before orders come in.
+
+    :param df: This is the DataFrame from the orders function, which is the set of orders being run in the simulation.
+    :param machine_time_swap: This is used for the build_time function for time to swap machines.
+    :param build_confidence: This is 'lambda,' or how confidence in knowing the PERT distribution range, and
+                            it is passed to the build_time function to set item build confidence.
+    :param a_stock: This sets how much Item A stock should be available before orders come in.
+    :param b_stock: This sets how much Item B stock should be available before orders come in.
+    :param c_stock: This sets how much Item C stock should be available before orders come in.
+    :param d_stock: This sets how much Item D stock should be available before orders come in.
+    :param e_stock: This sets how much Item D stock should be available before orders come in.
     :return stock_df: This function returns this DataFrame, which is the completed stock_inventory_queue.
 
-    https: // stackoverflow.com / questions / 16476924 / how - to - iterate - over - rows - in -a - dataframe - in -pandas
+    I adopted code from the following URL's as a resource to iterate over DataFrame rows:
+    https://stackoverflow.com/questions/16476924/how-to-iterate-over-rows-in-a-dataframe-in-pandas
+    https://stackoverflow.com/questions/39109045/numpy-where-with-multiple-conditions/39111919
     """
 
     stock_df = df.copy(deep=True)
@@ -402,4 +416,4 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
     return stock_df
 
 
-main(num_of_samples=1000)
+main(num_of_samples=1)
