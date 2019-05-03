@@ -15,6 +15,12 @@ if daily orders are completed in a timely fashion for a small business that cons
 
 ## Variables:
 Scenario 1: First Come First Queue:
+• How many work days are we simulating: 22, rounded up the average US work days in a month. 
+• How many orders are received each day: PERT distribution 
+• Order size: PERT distribution 
+• What items are in orders: NP.random.choice
+• Time to build item in order: PERT distributition
+• Machinary Swap time: how long it takes to swap between machinary. 
 
 Scenario 2: Stock Inventory Queue:
 
