@@ -62,15 +62,15 @@ In the inner range loop, set the PERT distribution for how many items per order 
 
 
 ## Github File Descriptions:
-Wieker_mc_poster_1.pdf: Poster Part 1
 
-Wieker_mc_poster_2.pdf: Poster Part 2
+monte_carlo_v1.py: Initial py files of my first simulation scenario, but I have since altered it (out of date).
 
-monte_carlo_v1.py: Initial py files of my first simulation scenario, but I have since altered it.
-
-monte_carlo_v2.py: Updated py files of the current simulation
+monte_carlo_v2.py: Updated py files of the current simulation.
 
 First Come First Serve Wait Time Queue Distribution.png: Scenario 1 First Come First Queue Simulation Distribution Histogram
 
 Stock Inventory Wait Time Queue Distribution.png: Scenario 2 Stock Inventory Queue Distribution Histogram
 
+Wieker_mc_poster_1.pdf: Poster Part 1
+
+Wieker_mc_poster_2.pdf: Poster Part 2
