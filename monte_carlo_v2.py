@@ -157,6 +157,7 @@ def orders(low, likely, high, daily_count_confidence, order_size_confidence, sam
     df = pd.DataFrame({'Order #': order_len, 'Day': column_day, 'Item A': column_a, 'Item B': column_b,
                        'Item C': column_c, 'Item D': column_d, 'Item E': column_e})
     df['Order #'] = df['Order #'] + 1
+
     return df
 
 
@@ -257,6 +258,7 @@ def first_come_queue(df, machine_time_swap, build_confidence):
     first_come_df['Wait Time'] = first_come_df['Pick Up Day'] + 1
 
     #print(first_come_df.head())
+
     return first_come_df
 
 
@@ -396,6 +398,7 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
     stock_df['Wait Time'] = stock_df['Pick Up Day'] + 1
 
     #print(stock_df.head())
+
     return stock_df
 
 
