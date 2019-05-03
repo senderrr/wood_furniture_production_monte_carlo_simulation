@@ -62,9 +62,9 @@ In the inner range loop, set the PERT distribution for how many items per order 
 
 
 ## Github File Descriptions:
-Wieker_mc_poster_1.jpg: Poster Part 1
+Wieker_mc_poster_1.pdf: Poster Part 1
 
-Wieker_mc_poster_2.jpg: Poster Part 2
+Wieker_mc_poster_2.pdf: Poster Part 2
 
 monte_carlo_v1.py: Initial py files of my first simulation scenario, but I have since altered it.
 
