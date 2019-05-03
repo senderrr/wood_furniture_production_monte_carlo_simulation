@@ -1,7 +1,7 @@
 """
 By Alex Wieker; Email: awieker2@illinois.edu
 IS 590 PR Final Project: Wood Furniture Production Monte Carlo Simulation"
-See assignment instructions in the README.md document.
+See README.md document for additional simulation information.
 """
 
 import numpy as np
@@ -9,9 +9,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import warnings
 
-
-desired_width = 500
-pd.set_option('display.width', desired_width)
 pd.set_option('display.max_columns', 30)
 
 
@@ -30,7 +27,7 @@ def main(num_of_samples):
 
     for i in range(num_of_samples):
         print('Running sample:', i)
-        generate_orders = orders(0, 3, 7, daily_count_confidence=4, order_size_confidence=4, samples=1)
+        generate_orders = orders(0, 2, 5, daily_count_confidence=4, order_size_confidence=4, samples=1)
         fcq = first_come_queue(generate_orders, machine_time_swap=0.5, build_confidence=4)
 
         stock_queue = stock_inventory_queue(generate_orders, machine_time_swap=0.5, build_confidence=4, a_stock=6,
@@ -40,31 +37,32 @@ def main(num_of_samples):
 
         stock_wait_time_list = np.append(stock_wait_time_list, stock_queue['Wait Time'])
 
-    print('Median first come queue customer wait time:', np.median(fcq_wait_time_list))
-    print('Mean first come queue customer wait time:', np.around(np.mean(fcq_wait_time_list), decimals=2))
-    print('Max first come queue customer wait time:', np.max(fcq_wait_time_list))
-    print('Min first come queue customer wait time:', np.min(fcq_wait_time_list))
+    print('Median first come queue customer wait time:', np.median(fcq_wait_time_list), 'days.')
+    print('Mean first come queue customer wait time:', np.around(np.mean(fcq_wait_time_list), decimals=2), 'days.')
+    print('Max first come queue customer wait time:', np.max(fcq_wait_time_list), 'days.')
+    print('Min first come queue customer wait time:', np.min(fcq_wait_time_list), 'days.')
 
-    fcq_wait_time_hist = plt.hist(fcq_wait_time_list, bins=25, density=False)
+    fcq_wait_time_hist = plt.hist(fcq_wait_time_list, bins=11, density=False)
     plt.xlabel('Wait Time')
     plt.ylabel('Count')
-    plt.title('First Come First Serve Time Queue Distribution')
-    #plt.savefig('First Come First Serve Time Queue Distribution.png')
-    #plt.show()
+    plt.title('First Come First Serve Wait Time Queue Distribution')
+    #plt.savefig('First Come First Serve Wait Time Queue Distribution.png')
+    plt.show()
 
     print('----')
 
-    print('Median stock inventory queue wait time customer wait time:', np.median(stock_wait_time_list))
-    print('Mean stock inventory queue come queue customer wait time:', np.around(np.mean(stock_wait_time_list), decimals=2))
-    print('Max stock inventory queue customer wait time:', np.max(stock_wait_time_list))
-    print('Min stock inventory queue customer wait time:', np.min(stock_wait_time_list))
+    print('Median stock inventory queue wait time customer wait time:', np.median(stock_wait_time_list), 'days.')
+    print('Mean stock inventory queue come queue customer wait time:',
+          np.around(np.mean(stock_wait_time_list), decimals=2), 'days.')
+    print('Max stock inventory queue customer wait time:', np.max(stock_wait_time_list), 'days.')
+    print('Min stock inventory queue customer wait time:', np.min(stock_wait_time_list), 'days.')
 
-    fcq_wait_time_hist = plt.hist(stock_wait_time_list, bins=25, density=False)
+    fcq_wait_time_hist = plt.hist(stock_wait_time_list, bins=11, density=False)
     plt.xlabel('Wait Time')
     plt.ylabel('Count')
     plt.title('Stock Inventory Wait Time Queue Distribution')
     #plt.savefig('Stock Inventory Wait Time Queue Distribution.png')
-    #plt.show()
+    plt.show()
 
 
 def pert(low, likely, high, confidence=4, samples=10000):
@@ -126,7 +124,7 @@ def orders(low, likely, high, daily_count_confidence, order_size_confidence, sam
         #print('daily order count:', daily_order_count)
 
         for j in range(daily_order_count[0]):
-            order_size = pert(1, 8, 15, confidence=order_size_confidence, samples=samples)
+            order_size = pert(1, 3, 10, confidence=order_size_confidence, samples=samples)
             order_size = np.around(order_size).astype(int)
             order_items = np.random.choice(item_order_options, size=order_size, p=[0.3, 0.1, 0.3, 0.2, 0.1])
             #print(order_items, 'day:', day_counter, 'order:', j + 1)
@@ -173,16 +171,6 @@ def build_time(item_list, machine_time_swap, low, likely, high, confidence):
     :param confidence: This is an input parameter for setting confidence in knowing the PERT distribution range.
     :return item_hours: This function returns a list of how long it takes to build each of the items from item_list.
     >>> test_df = pd.DataFrame({'Item A': [1, 3, 2, 2, 5, 6, 7, 10]})
-    >>> test_df = (generate_orders, machine_time_swap=0.5, build_confidence=4)
-       Item A
-    0       1
-    1       3
-    2       2
-    3       2
-    4       5
-    5       6
-    6       7
-    7      10
     >>> item_list = test_df['Item A']
     >>> type(item_list)
     <class 'pandas.core.series.Series'>
@@ -211,6 +199,16 @@ def first_come_queue(df, machine_time_swap, build_confidence):
 
     I adopted code from the following URL as a resource to iterate over DataFrame rows:
     https://stackoverflow.com/questions/16476924/how-to-iterate-over-rows-in-a-dataframe-in-pandas
+    >>> test_df = pd.DataFrame({'Item A': [1, 3, 2], 'Item B': [1, 2, 4], 'Item C': [3, 0, 2],
+    ...     'Item D': [2, 1, 5], 'Item E': [5, 2, 0]})
+    >>> test_df
+       Item A  Item B  Item C  Item D  Item E
+    0       1       1       3       2       5
+    1       3       2       0       1       2
+    2       2       4       2       5       0
+    >>> test_df = first_come_queue(test_df, machine_time_swap=0.5, build_confidence=4)
+    >>> test_df.columns
+    Index(['Item A', 'Item B', 'Item C', 'Item D', 'Item E', 'Build A Hours', 'Build B Hours', 'Build C Hours', 'Build D Hours', 'Build E Hours', 'Build Time', 'Pick Up Day', 'Wait Time'], dtype='object')
      """
 
     first_come_df = df.copy(deep=True)
@@ -249,31 +247,22 @@ def first_come_queue(df, machine_time_swap, build_confidence):
     first_come_df['Build D Hours'] = item_d_list
     first_come_df['Build E Hours'] = item_e_list
 
+    # Build Item x: How many items needed to be built to fulfil and/or restock inventory
     first_come_df['Build Time'] = first_come_df['Build A Hours'] + first_come_df['Build B Hours'] + \
                                   first_come_df['Build C Hours'] + first_come_df['Build D Hours'] + \
                                   first_come_df['Build E Hours']
+    # Applied ceil to this calculation because orders need to be processed and are available the next work day.
     first_come_df['Pick Up Day'] = np.ceil((first_come_df['Build Time'].cumsum(axis=0)) / 7.5)
+    # Added plus one to account for the customer ordering one day before the order was started in the manufactory.
     first_come_df['Wait Time'] = first_come_df['Pick Up Day'] + 1
 
-    # print(first_come_df)
+    #print(first_come_df.head())
     return first_come_df
 
 
 def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_stock, c_stock, d_stock, e_stock):
     """This function takes an input DataFrame (of orders), calculates how long it takes to build each of the orders, and
     then calculates how long customers are waiting for their order to  be available.
-    Variables:
-    Order #: order id
-    Day: Day that work was started on order--customer orders come in the day before
-    Item x: How many items were ordered per order
-    Start Stock x: How much inventory the manufactory has of the item
-    Surplus Stock: How much stock there is after taking items to fulfill order from inventory
-    Build Item x: How many items needed to be built to fulfil and/or restock inventory
-    Pick Up Day: The day in the work cycle that the item will be ready for the customer.Applied ceil to this calculation
-    because orders need to be packaged after being made, which means that they will be available the next work day.
-    Wait Time: How much time the customer waits from ordering the item and it being built. Calculated as Pick Up Day
-    plus 1 because there is a one day lapse betweeen sending a receiving an order
-
     :param df: This is an input DataFrame from the orders function, which is the set of orders being run in the simulation.
     :param machine_time_swap: This is an input parameter to pass to the build_time function for time to swap machines.
     :param build_confidence: This is an input parameter to pass to the build_time function to set item build confidence
@@ -289,9 +278,13 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
 
     stock_df = df.copy(deep=True)
 
+    # Start Stock x: How much inventory the manufactory has of the item
     stock_df['Start Stock A'] = 0
+    # Surplus Stock: How much stock there is after taking items from stock inventory to fulfill order
     stock_df['Surplus A Stock'] = a_stock - stock_df.groupby('Day')['Item A'].cumsum(axis=0)
+    # set stock to input stock value
     stock_df['Start Stock A'] = stock_df.groupby('Day')['Surplus A Stock'].shift(1).fillna(a_stock).astype('int')
+    # How many items needed to be built to fulfil and/or restock inventory
     stock_df['Build Item A'] = np.where(stock_df['Surplus A Stock'] >= 1, 0,
                                         np.where(stock_df['Start Stock A'] >= 1,
                                                  stock_df['Item A'] - stock_df['Start Stock A'], stock_df['Item A']))
@@ -396,18 +389,14 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
 
     stock_df['Order Build Hours'] = stock_df['Build A Hours'] + stock_df['Build B Hours'] + stock_df['Build C Hours'] \
                              + stock_df['Build D Hours'] + stock_df['Build E Hours']
+
+    # Applied ceil to this calculation because orders need to be processed and are available the next work day.
     stock_df['Pick Up Day'] = np.ceil((stock_df['Order Build Hours'].cumsum(axis=0) / 7.5))
+    # Added plus one to account for the customer ordering one day before the order was started in the manufactory.
     stock_df['Wait Time'] = stock_df['Pick Up Day'] + 1
 
-    stock_df_preview = stock_df[['Order #', 'Day', 'Item A', 'Item B', 'Item C', 'Item D', 'Item E', 'Build A Hours',
-                                 'Build B Hours', 'Build C Hours', 'Build D Hours', 'Build E Hours',
-                                 'Order Build Hours', 'Pick Up Day', 'Wait Time']]
-    #print(stock_df_preview)
-
-    item_a_preview = stock_df[['Order #', 'Item A', 'Start Stock A', 'Surplus A Stock', 'Restock A', 'Build Item A',
-                               'Build A Hours']]
-    #print(item_a_preview)
+    #print(stock_df.head())
     return stock_df
 
 
-main(num_of_samples=1)
+main(num_of_samples=1000)
