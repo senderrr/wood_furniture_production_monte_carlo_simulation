@@ -50,7 +50,7 @@ def main(num_of_samples):
     plt.ylabel('Count')
     plt.title('First Come First Serve Time Queue Distribution')
     #plt.savefig('First Come First Serve Time Queue Distribution.png')
-    plt.show()
+    #plt.show()
 
     print('----')
 
@@ -64,7 +64,7 @@ def main(num_of_samples):
     plt.ylabel('Count')
     plt.title('Stock Inventory Wait Time Queue Distribution')
     #plt.savefig('Stock Inventory Wait Time Queue Distribution.png')
-    plt.show()
+    #plt.show()
 
 
 def pert(low, likely, high, confidence=4, samples=10000):
@@ -410,4 +410,4 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
     return stock_df
 
 
-main(num_of_samples=1000)
+main(num_of_samples=1)

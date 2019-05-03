@@ -110,9 +110,6 @@ def first_come_queue(df, build_confidence):
         item_e_count = row['Item E']
 
 
-
-        #print(item_a_count)
-
         item_a_time = fcq_hours(item_a_count, 0.5, 2, 3, 4, confidence=build_confidence)
         item_a_list.append(item_a_time)
 
@@ -188,54 +185,9 @@ def priority_queue(df, build_confidence):
     pq_df['D T'] = order_d_list
     pq_df['E T'] = order_e_list
 
-    day_2 = pq_df[pq_df['Day'] == 2]
-    import warnings
-    warnings.filterwarnings('ignore')
-    day_2['a_build'] = day_2['A T'].cumsum(axis=0)
-    a_tail = day_2['a_build'].tail(1)
-    print(a_tail)
-    day_2['b_build'] = day_2['B T'].cumsum(axis=0)
-
-    day_2['b_build'] = day_2['b_build'] + day_2['a_build'].tail(1)
-    day_2['c_build'] = day_2['C T'].cumsum(axis=0)
-    day_2['c_build'] = day_2['c_build'] + day_2['b_build'].tail(1)
-    day_2['d_build'] = day_2['D T'].cumsum(axis=0)
-    day_2['d_build'] = day_2['d_build'] + day_2['c_build'].tail(1)
-    day_2['e_build'] = day_2['E T'].cumsum(axis=0)
-    day_2['e_build'] = day_2['e_build'] + day_2['d_build'].tail(1)
-
-    #print(day_2)
-    day_3 = pq_df[pq_df['Day'] == 3]
-    day_3['b_build'] = day_3['B T'].cumsum(axis=0)
-    day_3['a_build'] = day_3['A T'].cumsum(axis=0)
-    day_3['b_build'] = day_3['b_build'] + day_3['a_build'].tail(1)
-    day_3['c_build'] = day_3['C T'].cumsum(axis=0)
-    day_3['c_build'] = day_3['c_build'] + day_3['b_build'].tail(1)
-    day_3['d_build'] = day_3['D T'].cumsum(axis=0)
-    day_3['d_build'] = day_3['d_build'] + day_3['c_build'].tail(1)
-    day_3['e_build'] = day_3['E T'].cumsum(axis=0)
-    day_3['e_build'] = day_3['e_build'] + day_3['d_build'].tail(1)
-    #print(day_3)
-    all_days = pd.concat([day_2, day_3])
-    all_days['b_build'] = all_days.groupby(['Order #', 'Day'])['a_build'].tail(1) + all_days['b_build']
-    #print(all_days)
-
-    # test = pq_df
-    #
-    # test['a_build'] = test.groupby(['Order #', 'Day'])['A T'].cumsum(axis=0)
-    # test['b_build'] = test.groupby(['Order #', 'Day'])['B T'].cumsum(axis=0)
-    #
-    # test['b_build'] = test['b_build'] + test['a_build'].tail(1)
-    # print(test)
 
 
 
-    # t['A cumsum'] = t.groupby(by=['A T']).cumsum(axis=0)
-    # t['B cumsum'] = t.groupby(by=['B T']).cumsum(axis=0)
-    # t['C cumsum'] = t.groupby(by=['C T']).cumsum(axis=0)
-    # t['D cumsum'] = t.groupby(by=['D T']).cumsum(axis=0)
-    # t['E cumsum'] = t.groupby(by=['E T']).cumsum(axis=0)
-    # print(t)
 
     test2 = pq_df.groupby(['Order #', 'Day'])['A T', 'B T', 'C T', 'D T', 'E T'].sum(axis=0).reset_index()
 
@@ -261,13 +213,10 @@ def priority_queue(df, build_confidence):
 
 
 
-    #pq_df['batch E T'] = np.where(pq_df['E cumsum'] != 0, pq_df['E cumsum'], pq_df['E cumsum'])
 
     pq_df['Build Time'] = pq_df['batch A T'] + pq_df['batch B T'] + pq_df['batch C T'] + \
                               pq_df['batch D T'] + pq_df['batch E T']
 
-    #print(pq_df)
-    # df_test['batch E T'] = np.where(df_test['E T'] != 0, df_test['batch E T'], df_test['E T'])
 
     batch_made = pq_df.groupby('Day')['Build Time'].max()
     batch_made = batch_made.cumsum()
@@ -277,11 +226,6 @@ def priority_queue(df, build_confidence):
 
     print(merge.head(15))
 
-    # https://stackoverflow.com/questions/49161120/pandas-python-set-value-of-one-column-based-on-value-in-another-column
-    # for j in range(1, 23):
-    #     pq_df.loc[pq_df.Day == j, 'Pick Up Day'] = pq_df['Build Time'] + pq_df['Pick Up Day'][j-1]
-        #pq_df['Pick Up Day'] = np.where(pq_df['Day'] == 1, pq_df['Build Time'], pq_df['Build Time'])
-
 
 
 desired_width = 500
@@ -290,106 +234,5 @@ pd.set_option('display.max_columns', 18)
 
 generate_orders = orders(0, 3, 7, daily_count_confidence=4, order_size_confidence=4, samples=1)
 
-first_come_queue(generate_orders, build_confidence=4)
-#priority_queue(generate_orders, build_confidence=4)
-
-# https://stackoverflow.com/questions/22650833/pandas-groupby-cumulative-sum -- not currenlty using this url
-
-# print(df_test)
-# A = df_test
-# A = A.groupby(['Order #', 'Day'])['A T', 'B T', 'C T', 'D T', 'E T'].sum(axis=0).reset_index()
-# #A['tot'] = A['A T'] + A['B T'] + A['C T'] + A['D T'] + A['E T']
-# print(A)
-#
-# # get the total item batch time per order
-# df_test['A cumsum'] = df_test.groupby(['Day'])['A T'].cumsum(axis=0)
-# df_test['B cumsum'] = df_test.groupby(['Day'])['B T'].cumsum(axis=0)
-# df_test['C cumsum'] = df_test.groupby(['Day'])['C T'].cumsum(axis=0)
-# df_test['D cumsum'] = df_test.groupby(['Day'])['D T'].cumsum(axis=0)
-# df_test['E cumsum'] = df_test.groupby(['Day'])['E T'].cumsum(axis=0)
-#
-# # extract when last item done
-# ba = df_test.groupby('Day')['A cumsum'].max()
-# bb = df_test.groupby('Day')['B cumsum'].max()
-# bc = df_test.groupby('Day')['C cumsum'].max()
-# bd = df_test.groupby('Day')['D cumsum'].max()
-# be = df_test.groupby('Day')['E cumsum'].max()
-#
-# # https://stackoverflow.com/questions/12307099/modifying-a-subset-of-rows-in-a-pandas-dataframe
-# for i in range(1, 23):
-#     df_test.loc[df_test.Day == i, 'batch A T'] = ba[i] + 0.5
-#     df_test.loc[df_test.Day == i, 'batch B T'] = bb[i] + 0.5
-#     df_test.loc[df_test.Day == i, 'batch C T'] = bc[i] + 0.5
-#     df_test.loc[df_test.Day == i, 'batch D T'] = bd[i] + 0.5
-#     df_test.loc[df_test.Day == i, 'batch E T'] = be[i] + 0.5
-#
-#
-# df_test['Build Time'] = df_test['batch A T'] + df_test['batch B T'] + df_test['batch C T'] + \
-#                             df_test['batch D T'] + + df_test['batch E T']
-#
-# # df_test['batch E T'] = np.where(df_test['E T'] != 0, df_test['batch E T'], df_test['E T'])
-#
-# max_df = df_test.groupby('Day')['Build Time'].max()
-# max_df = max_df.cumsum()
-#
-# merge = pd.merge(df_test, max_df, left_on='Day', right_on='Day', how='inner', suffixes=(' ', ' merge'))
-# print(merge.head(15))
-#
-#
-#
-#
-# # https://stackoverflow.com/questions/49161120/pandas-python-set-value-of-one-column-based-on-value-in-another-column
-# for j in range(1, 23):
-#     # df_test.loc[df_test.Day == j, 'Pick Up Day'] = df_test['Build Time'] + df_test['Pick Up Day'][j-1]
-#     df_test['Pick Up Day'] = np.where(df_test['Day'] == 1, df_test['Build Time'], df_test['Build Time'])
-#
-#     # cumsum_df = df_test.groupby('Day')['Build Time'].max()
-#     # cumsum_df = max_df.cumsum()
-#     # df_test['Pick Up Day'] = np.where(df_test['Day'] == 1, df_test['Build Time'], df_test['Build Time'])
-#
-#
-#
-#
-#
-#
-#
-
-
-
-
-
-    #df_test['Pick Up Day'] = np.where(df_test['Day'] != 1, df_test['Build Time'], df_test['Build Time'])
-    # df_test.loc[df_test.Day == j, 'Pick Up Day'] = (df_test['Build Time'])
-    # df_test['Pick Up Day'] = np.where(df_test['Day'] == 1, df_test['Build Time'], df_test['Build Time'] + max_df[j])
-    #
-    # if df_test.loc[df_test.Day > 1]:
-    #     df_test['Pick Up Day'] = df_test['Pick Up Day'][j-1] + df_test['Build Time'][j]
-
-
-# print df.groupby(by=['name','day']).sum().groupby(level=[0]).cumsum()
-#df_test = df_test[['Order #', 'Day',  'Build Time', 'Item A', 'A T', 'test A', 'batch A T']]
-
-#https://stackoverflow.com/questions/48123368/pandas-error-when-using-if-else-to-create-new-column-the-truth-value-of-a-serie/48123413
-#df = df.assign(C=np.where(df['B'] != 0, df['A'] / df['B'], sentinel))
-
-
-
-# https://stackoverflow.com/questions/48123368/pandas-error-when-using-if-else-to-create-new-column-the-truth-value-of-a-serie/48123413
-# if then else
-# go back to days loc !!
-
-#df_test['batch A T'] = np.where(df_test['B T'] == 0, df_test['test A'], df_test['batch B T'])
-
-#df_test['batch A T'] = np.where((df_test['B T'] == 0) | (df_test['C T'] == 0), 0, df_test['batch A T'])
-
-# df_test['batch B T'] = np.where(df_test['B T'] == 0, df_test['test B'], df_test['test B'])
-# df_test['batch C T'] = np.where(df_test['C T'] == 0, df_test['test C'], df_test['test C'])
-# df_test['batch C T'] = np.where(df_test['C T'] != 0, df_test['batch C T'], df_test['C T'])
-#
-# df_test['Build Time'] = df_test['batch A T'] + df_test['batch B T'] + df_test['batch C T']
-#df_test['Pick Up Day'] = df_test.groupby('Day')['Build Time'].cumsum() #.groupby(level=[0]).cumsum()  # use max equation subset
-#max_df = df_test.groupby('Day')['Build Time'].max().cumsum()
-# max_df = df_test.groupby('Day')['Pick Up Day'].max().cumsum()
-
-
-# stock_df['Build Item A'] = np.where(stock_df['Surplus A Stock'] >= 1, 0, stock_df['Item A'])
+#first_come_queue(generate_orders, build_confidence=4)
+priority_queue(generate_orders, build_confidence=4)
