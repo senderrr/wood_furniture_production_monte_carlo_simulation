@@ -1,12 +1,14 @@
 """
-590PR Spring 2019. Instructor: John Weible  jweible@illinois.edu
-Assignment on Numpy: "High-Tech Sculptures"
+By Alex Wieker; Email: awieker2@illinois.edu
+IS 590 PR Final Project: Wood Furniture Production Monte Carlo Simulation"
 See assignment instructions in the README.md document.
 """
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import warnings
+
 
 desired_width = 500
 pd.set_option('display.width', desired_width)
@@ -39,30 +41,28 @@ def main(num_of_samples):
         stock_wait_time_list = np.append(stock_wait_time_list, stock_queue['Wait Time'])
 
     print('Median first come queue customer wait time:', np.median(fcq_wait_time_list))
-    print('Mean first come queue customer wait time:', np.mean(fcq_wait_time_list))
+    print('Mean first come queue customer wait time:', np.around(np.mean(fcq_wait_time_list), decimals=2))
     print('Max first come queue customer wait time:', np.max(fcq_wait_time_list))
     print('Min first come queue customer wait time:', np.min(fcq_wait_time_list))
 
-    fcq_wait_time_hist = plt.hist(fcq_wait_time_list, bins=500, density=False)
+    fcq_wait_time_hist = plt.hist(fcq_wait_time_list, bins=25, density=False)
     plt.xlabel('Wait Time')
     plt.ylabel('Count')
     plt.title('First Come First Serve Time Queue Distribution')
-    # plt.ylim([0, 8000])
     #plt.savefig('First Come First Serve Time Queue Distribution.png')
     plt.show()
 
     print('----')
 
     print('Median stock inventory queue wait time customer wait time:', np.median(stock_wait_time_list))
-    print('Mean stock inventory queue come queue customer wait time:', np.mean(stock_wait_time_list))
+    print('Mean stock inventory queue come queue customer wait time:', np.around(np.mean(stock_wait_time_list), decimals=2))
     print('Max stock inventory queue customer wait time:', np.max(stock_wait_time_list))
     print('Min stock inventory queue customer wait time:', np.min(stock_wait_time_list))
 
-    fcq_wait_time_hist = plt.hist(stock_wait_time_list, bins=500, density=False)
+    fcq_wait_time_hist = plt.hist(stock_wait_time_list, bins=25, density=False)
     plt.xlabel('Wait Time')
     plt.ylabel('Count')
     plt.title('Stock Inventory Wait Time Queue Distribution')
-    # plt.ylim([0, 8000])
     #plt.savefig('Stock Inventory Wait Time Queue Distribution.png')
     plt.show()
 
@@ -71,14 +71,13 @@ def pert(low, likely, high, confidence=4, samples=10000):
     """
     I got this function from Instructor Weible's Lecture Notes
 
-    :param low:
-    :param likely:
-    :param high:
+    :param low: This input parameter is the lowest expected value.
+    :param likely: This input parameter is the most likely expected value or mode
+    :param high: This input parameter is the highest expectedvalue.
     :param confidence:
     :param samples:
-    :return:
+    :return beta:
     """
-
 
     if confidence < 1 or confidence > 18:
         raise ValueError('confidence value must be in range 1-18.')
@@ -97,12 +96,18 @@ def orders(low, likely, high, daily_count_confidence, order_size_confidence, sam
     """
     :param low: This input variable is the lowest expected value, and will be called for the pert function.
     :param likely: This input variable is the most likely expected value or mode, and it will be used for the pert function.
-    :param high: This input variable is the expected highest, and will be used for the pert function.
+    :param high: This input variable is the highest expected value, and will be used for the pert function.
     :param daily_count_confidence: This is an input parameter for setting confidence in knowing daily order count.
     :param order_size_confidence: This is an input parameter for setting confidence in knowing order size.
     :param samples: This is an input parameter for setting how many samples to run in the PERT function.
     :return df: This function returns a DataFrame, which will be called in later functions
+    >>> generate_test_orders = orders(0, 3, 7, daily_count_confidence=4, order_size_confidence=4, samples=1)
+    >>> type(generate_test_orders)
+    <class 'pandas.core.frame.DataFrame'>
+    >>> list(generate_test_orders)
+    ['Order #', 'Day', 'Item A', 'Item B', 'Item C', 'Item D', 'Item E']
     """
+
     item_order_options = ['A', 'B', 'C', 'D', 'E']
     all_orders = []
     day_counter = 0
@@ -154,7 +159,6 @@ def orders(low, likely, high, daily_count_confidence, order_size_confidence, sam
     df = pd.DataFrame({'Order #': order_len, 'Day': column_day, 'Item A': column_a, 'Item B': column_b,
                        'Item C': column_c, 'Item D': column_d, 'Item E': column_e})
     df['Order #'] = df['Order #'] + 1
-
     return df
 
 
@@ -168,7 +172,25 @@ def build_time(item_list, machine_time_swap, low, likely, high, confidence):
     :param high: This input variable is the expected highest, and will be used for the pert function.
     :param confidence: This is an input parameter for setting confidence in knowing the PERT distribution range.
     :return item_hours: This function returns a list of how long it takes to build each of the items from item_list.
+    >>> test_df = pd.DataFrame({'Item A': [1, 3, 2, 2, 5, 6, 7, 10]})
+    >>> test_df = (generate_orders, machine_time_swap=0.5, build_confidence=4)
+       Item A
+    0       1
+    1       3
+    2       2
+    3       2
+    4       5
+    5       6
+    6       7
+    7      10
+    >>> item_list = test_df['Item A']
+    >>> type(item_list)
+    <class 'pandas.core.series.Series'>
+    >>> test_df_build_time = build_time(item_list, 0.5, 1, 1.5, 2, confidence=4)
+    >>> type(test_df_build_time)
+    <class 'numpy.float64'>
     """
+
     item_count = item_list.astype('int')
     item_hours = pert(low, likely, high, confidence=confidence, samples=item_count)
     item_hours = np.sum(item_hours)
@@ -186,14 +208,19 @@ def first_come_queue(df, machine_time_swap, build_confidence):
     :param machine_time_swap: This is an input parameter to pass to the build_time function for time to swap machines.
     :param build_confidence: This is an input parameter to pass to the build_time function to set item build confidence.
     :return first_come_df: This function returns this DataFrame, which is the completed first_come_queue.
-    """
+
+    I adopted code from the following URL as a resource to iterate over DataFrame rows:
+    https://stackoverflow.com/questions/16476924/how-to-iterate-over-rows-in-a-dataframe-in-pandas
+     """
+
+    first_come_df = df.copy(deep=True)
+
     item_a_list = []
     item_b_list = []
     item_c_list = []
     item_d_list = []
     item_e_list = []
-    first_come_df = df.copy(deep=True)
-    # https://stackoverflow.com/questions/16476924/how-to-iterate-over-rows-in-a-dataframe-in-pandas
+
     for index, row in first_come_df.iterrows():
         item_a_count = row['Item A']
         item_b_count = row['Item B']
@@ -223,7 +250,7 @@ def first_come_queue(df, machine_time_swap, build_confidence):
     first_come_df['Build E Hours'] = item_e_list
 
     first_come_df['Build Time'] = first_come_df['Build A Hours'] + first_come_df['Build B Hours'] + \
-                                  first_come_df['Build C Hours'] + first_come_df['Build D Hours'] +\
+                                  first_come_df['Build C Hours'] + first_come_df['Build D Hours'] + \
                                   first_come_df['Build E Hours']
     first_come_df['Pick Up Day'] = np.ceil((first_come_df['Build Time'].cumsum(axis=0)) / 7.5)
     first_come_df['Wait Time'] = first_come_df['Pick Up Day'] + 1
@@ -256,6 +283,8 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
     :param d_stock: This input parameter for sets how much Item D stock should be available before orders come in.
     :param e_stock: This input parameter for sets how much Item D stock should be available before orders come in.
     :return stock_df: This function returns this DataFrame, which is the completed stock_inventory_queue.
+
+    https: // stackoverflow.com / questions / 16476924 / how - to - iterate - over - rows - in -a - dataframe - in -pandas
     """
 
     stock_df = df.copy(deep=True)
@@ -336,7 +365,6 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
     item_d_list = []
     item_e_list = []
 
-# https: // stackoverflow.com / questions / 16476924 / how - to - iterate - over - rows - in -a - dataframe - in -pandas
     for index, row in stock_df.iterrows():
 
         item_a_count = row['Build Item A']

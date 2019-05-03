@@ -390,3 +390,6 @@ first_come_queue(generate_orders, build_confidence=4)
 #df_test['Pick Up Day'] = df_test.groupby('Day')['Build Time'].cumsum() #.groupby(level=[0]).cumsum()  # use max equation subset
 #max_df = df_test.groupby('Day')['Build Time'].max().cumsum()
 # max_df = df_test.groupby('Day')['Pick Up Day'].max().cumsum()
+
+
+# stock_df['Build Item A'] = np.where(stock_df['Surplus A Stock'] >= 1, 0, stock_df['Item A'])
