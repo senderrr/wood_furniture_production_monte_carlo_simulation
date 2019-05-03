@@ -53,7 +53,7 @@ After running my simulation 1,000 times, I found that my hypothesis is true beca
 main function: 
 
 For the generate orders variable, set order PERT distribution range, PERT confidence, and leave sample at one. In the fcq varaible, set machine_time_swap to desired swapping time and set build_confidence to desired confidence.
-In the  stock_queue variable, set machine_time_swap to desired swapping time and set build_confidence to desired confidence but also set how much inventory_stock should be available for  a_stock, b_stock, c_stock, d_stock, and e_stock.
+In the  stock_queue variable, set machine_time_swap to desired swapping time and set build_confidence to desired confidence but also set how much inventory_stock should be available for  a_stock, b_stock, c_stock, d_stock, and e_stock. Lastly, when the function is called set how many simulations to run.
 
 orders function: 
 
