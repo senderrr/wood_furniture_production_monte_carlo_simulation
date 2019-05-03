@@ -26,7 +26,7 @@ Scenario 1: First Come First Queue:
 
 • Time to build item in order: PERT distributition
 
-• Machinary Swap time: how long it takes to swap between machinary. 
+• How long it takes to swap between machinary: static variable (Machinary Swap time)
 
 Scenario 2: Stock Inventory Queue:
 • How many work days are we simulating: 22, rounded up the average US work days in a month. 
@@ -39,7 +39,7 @@ Scenario 2: Stock Inventory Queue:
 
 • Time to build item in order: PERT distributition
 
-• Machinary Swap time: how long it takes to swap between machinary.
+• How long it takes to swap between machinary: static variable (Machinary Swap time)
 
 • How much stock inventory should be available at the start of each day for each item: static variable based on user input in the form of a_stock, b_stock, c_stock,  d_stock, and e_stock.
 
