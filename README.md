@@ -46,6 +46,8 @@ I hypothesize that the inventory stock queue will result in orders have less wai
 
 ## Results: 
 
+After running my simulation 1,000 times, I found that my hypothesis is true because the median wait time in the second scenario, stock inventory queue, is 33 whereas the first scenario, the first come first queue, is 35. In addition, the second scenario had a mean of 33.24 days while the first scenario had a mean of 35.93 days. This suggests in the second scenario in comparison to the first secenario that it took less time to build the orders and more customers had less of a delay between making an order and receiving their order.  Additionally, the second scenario has a min wait time of 1 days, whereas the first scenario has a min wait time of 2 days. This also suggests that in the second scenario many orders were already made, due to the stock inventory, when the order came in, and  were just needing to be prepared for the customer to receive them. Lastly, the second scenario had a max wait time of 92 days, whereas the first scenario had a max wait time of 97 days, which suggests that more customers in the first scenario had to wait longer than the second scenario.
+
 ## Instructions on how to use the program:
 
 
