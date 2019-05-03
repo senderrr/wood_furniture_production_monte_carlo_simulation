@@ -27,6 +27,7 @@ Scenario 1: First Come First Queue:
 • How long it takes to swap between machinary: static variable (Machinary Swap time)
 
 Scenario 2: Stock Inventory Queue:
+
 • How many work days are we simulating: 22, rounded up the average US work days in a month. 
 
 • How many orders are received each day: PERT distribution 
