@@ -52,3 +52,7 @@ I hypothesize that the inventory stock queue will result in orders have less wai
 
 
 ## Github File Descriptions:
+Wieker_mc_poster_1.jpg: Poster Part 1
+Wieker_mc_poster_2.jpg: Poster Part 2
+monte_carlo_v1.py: Initial py files of my first simulation scenario, but I have since altered it.
+monte_carlo_v2.py: Updated py files of the current simulation
