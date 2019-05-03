@@ -1,54 +1,84 @@
+"""
+590PR Spring 2019. Instructor: John Weible  jweible@illinois.edu
+Assignment on Numpy: "High-Tech Sculptures"
+See assignment instructions in the README.md document.
+"""
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import warnings
 
+desired_width = 500
+pd.set_option('display.width', desired_width)
+pd.set_option('display.max_columns', 30)
 
-def main():
+
+def main(num_of_samples):
+    """This function runs the orders function to generate an order that is the rounded up US average work day per month,
+    22 days, and then puts that set of orders into the first_come_queue and stock_inventory_que 10,000 times. After
+    the simulation is run 10,000 times this function outputs aggregate statistics and two histogram distributions, one
+    for each of the different type of scenarios being run in the simulation.
+    :param num_of_samples: This is an input parameter to set how many times to run the simulation.
+    """
+
     warnings.filterwarnings('ignore', category=RuntimeWarning)
 
-    fcfs_wait_time_list = []
-    stock_wait_time_list = []
-    stock_build_time_list = []
-    stock_order_size_list = []
+    fcq_wait_time_list = np.array([])
+    stock_wait_time_list = np.array([])
 
-    for s in range(1):
+    for i in range(num_of_samples):
+        print('Running sample:', i)
         generate_orders = orders(0, 3, 7, daily_count_confidence=4, order_size_confidence=4, samples=1)
         fcq = first_come_queue(generate_orders, machine_time_swap=0.5, build_confidence=4)
 
-    #     fcfs_wait_time = fcq['Wait Time']
-    #     fcfs_wait_time_list.append(fcfs_wait_time)
-    # fcfs_mean_wait_time = np.mean(fcfs_wait_time_list)
-    # print('Average customer wait time:', fcfs_wait_time_list)
+        stock_queue = stock_inventory_queue(generate_orders, machine_time_swap=0.5, build_confidence=4, a_stock=6,
+                                            b_stock=6, c_stock=8, d_stock=6, e_stock=3)
 
-        inventory_queue = inventory_first_come_queue(generate_orders, machine_time_swap=0.5, build_confidence=4,
-                                                      a_stock=6, b_stock=6, c_stock=8, d_stock=6, e_stock=3)
+        fcq_wait_time_list = np.append(fcq_wait_time_list, fcq['Wait Time'])
 
-        average_wait_time = inventory_queue['Wait Time']
-        stock_wait_time_list.append(average_wait_time)
+        stock_wait_time_list = np.append(stock_wait_time_list, stock_queue['Wait Time'])
 
-        average_build_time = np.mean(inventory_queue['Build Time'])
-        stock_build_time_list.append(average_build_time)
+    print('Median first come queue customer wait time:', np.median(fcq_wait_time_list))
+    print('Mean first come queue customer wait time:', np.mean(fcq_wait_time_list))
+    print('Max first come queue customer wait time:', np.max(fcq_wait_time_list))
+    print('Min first come queue customer wait time:', np.min(fcq_wait_time_list))
 
-        average_order_num = len(inventory_queue)
-        stock_order_size_list.append(average_order_num)
+    fcq_wait_time_hist = plt.hist(fcq_wait_time_list, bins=500, density=False)
+    plt.xlabel('Wait Time')
+    plt.ylabel('Count')
+    plt.title('First Come First Serve Time Queue Distribution')
+    # plt.ylim([0, 8000])
+    #plt.savefig('First Come First Serve Time Queue Distribution.png')
+    plt.show()
 
-    mean_wait_time = stock_wait_time_list
-    #print('Average customer wait time:', mean_wait_time)
-    # print('Stock wait time list:', stock_wait_time_list)
+    print('----')
 
-    mean_build_time = np.mean(stock_build_time_list)
-    #print('Average order Build time:', mean_build_time)
+    print('Median stock inventory queue wait time customer wait time:', np.median(stock_wait_time_list))
+    print('Mean stock inventory queue come queue customer wait time:', np.mean(stock_wait_time_list))
+    print('Max stock inventory queue customer wait time:', np.max(stock_wait_time_list))
+    print('Min stock inventory queue customer wait time:', np.min(stock_wait_time_list))
 
-    stock_order_size_list = np.mean(stock_order_size_list)
-    #print('Average order size per month:', stock_order_size_list)
-
-    plt.hist(stock_wait_time_list, bins=100)
-    #plt.show()
+    fcq_wait_time_hist = plt.hist(stock_wait_time_list, bins=500, density=False)
+    plt.xlabel('Wait Time')
+    plt.ylabel('Count')
+    plt.title('Stock Inventory Wait Time Queue Distribution')
+    # plt.ylim([0, 8000])
+    #plt.savefig('Stock Inventory Wait Time Queue Distribution.png')
+    plt.show()
 
 
 def pert(low, likely, high, confidence=4, samples=10000):
-    """I got this function from Instructor Weible's Lecture Notes"""
+    """
+    I got this function from Instructor Weible's Lecture Notes
+
+    :param low:
+    :param likely:
+    :param high:
+    :param confidence:
+    :param samples:
+    :return:
+    """
+
 
     if confidence < 1 or confidence > 18:
         raise ValueError('confidence value must be in range 1-18.')
@@ -64,6 +94,15 @@ def pert(low, likely, high, confidence=4, samples=10000):
 
 
 def orders(low, likely, high, daily_count_confidence, order_size_confidence, samples):
+    """
+    :param low: This input variable is the lowest expected value, and will be called for the pert function.
+    :param likely: This input variable is the most likely expected value or mode, and it will be used for the pert function.
+    :param high: This input variable is the expected highest, and will be used for the pert function.
+    :param daily_count_confidence: This is an input parameter for setting confidence in knowing daily order count.
+    :param order_size_confidence: This is an input parameter for setting confidence in knowing order size.
+    :param samples: This is an input parameter for setting how many samples to run in the PERT function.
+    :return df: This function returns a DataFrame, which will be called in later functions
+    """
     item_order_options = ['A', 'B', 'C', 'D', 'E']
     all_orders = []
     day_counter = 0
@@ -74,6 +113,7 @@ def orders(low, likely, high, daily_count_confidence, order_size_confidence, sam
     column_d = []
     column_e = []
     column_day = []
+
     for i in range(22):
         day_counter += 1
         daily_order_count = pert(low, likely, high, confidence=daily_count_confidence, samples=samples)
@@ -110,7 +150,6 @@ def orders(low, likely, high, daily_count_confidence, order_size_confidence, sam
 
             all_orders.append(order_items)
 
-    print('---')
     order_len = list(range(len(all_orders)))
     df = pd.DataFrame({'Order #': order_len, 'Day': column_day, 'Item A': column_a, 'Item B': column_b,
                        'Item C': column_c, 'Item D': column_d, 'Item E': column_e})
@@ -120,6 +159,16 @@ def orders(low, likely, high, daily_count_confidence, order_size_confidence, sam
 
 
 def build_time(item_list, machine_time_swap, low, likely, high, confidence):
+    """This function takes an input list, calls the pert function that list to calculate how long it takes to build
+    all of the items in the list, and then returns the calculated series.
+    :param item_list: This input variable is a list of item counts.
+    :param machine_time_swap: This input variable is how long it takes to swap machines.
+    :param low: This input variable is the lowest expected value, and will be called for the pert function.
+    :param likely: This input variable is the most likely expected value or mode, and it will be used for the pert function.
+    :param high: This input variable is the expected highest, and will be used for the pert function.
+    :param confidence: This is an input parameter for setting confidence in knowing the PERT distribution range.
+    :return item_hours: This function returns a list of how long it takes to build each of the items from item_list.
+    """
     item_count = item_list.astype('int')
     item_hours = pert(low, likely, high, confidence=confidence, samples=item_count)
     item_hours = np.sum(item_hours)
@@ -131,6 +180,13 @@ def build_time(item_list, machine_time_swap, low, likely, high, confidence):
 
 
 def first_come_queue(df, machine_time_swap, build_confidence):
+    """This function takes an input DataFrame (of orders), calculates how long it takes to build each of the orders, and
+    then calculates how long customers are waiting for their order to  be available.
+    :param df: This is an input DataFrame from the orders function, which is the set of orders being run in the simulation.
+    :param machine_time_swap: This is an input parameter to pass to the build_time function for time to swap machines.
+    :param build_confidence: This is an input parameter to pass to the build_time function to set item build confidence.
+    :return first_come_df: This function returns this DataFrame, which is the completed first_come_queue.
+    """
     item_a_list = []
     item_b_list = []
     item_c_list = []
@@ -160,52 +216,119 @@ def first_come_queue(df, machine_time_swap, build_confidence):
         item_e_time = build_time(item_e_count, machine_time_swap, 4, 5, 6, confidence=build_confidence)
         item_e_list.append(item_e_time)
 
-    first_come_df['A T'] = item_a_list
-    first_come_df['B T'] = item_b_list
-    first_come_df['C T'] = item_c_list
-    first_come_df['D T'] = item_d_list
-    first_come_df['E T'] = item_e_list
+    first_come_df['Build A Hours'] = item_a_list
+    first_come_df['Build B Hours'] = item_b_list
+    first_come_df['Build C Hours'] = item_c_list
+    first_come_df['Build D Hours'] = item_d_list
+    first_come_df['Build E Hours'] = item_e_list
 
-    first_come_df['Build Time'] = first_come_df['A T'] + first_come_df['B T'] + first_come_df['C T'] + first_come_df['D T'] + first_come_df['E T']
+    first_come_df['Build Time'] = first_come_df['Build A Hours'] + first_come_df['Build B Hours'] + \
+                                  first_come_df['Build C Hours'] + first_come_df['Build D Hours'] +\
+                                  first_come_df['Build E Hours']
     first_come_df['Pick Up Day'] = np.ceil((first_come_df['Build Time'].cumsum(axis=0)) / 7.5)
-    first_come_df['Wait Time'] = first_come_df['Pick Up Day'] - first_come_df['Day'] + 1
+    first_come_df['Wait Time'] = first_come_df['Pick Up Day'] + 1
 
-    #print(first_come_df)
+    # print(first_come_df)
     return first_come_df
 
 
-def inventory_first_come_queue(df, machine_time_swap,  build_confidence, a_stock, b_stock, c_stock, d_stock, e_stock):
+def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_stock, c_stock, d_stock, e_stock):
+    """This function takes an input DataFrame (of orders), calculates how long it takes to build each of the orders, and
+    then calculates how long customers are waiting for their order to  be available.
+    Variables:
+    Order #: order id
+    Day: Day that work was started on order--customer orders come in the day before
+    Item x: How many items were ordered per order
+    Start Stock x: How much inventory the manufactory has of the item
+    Surplus Stock: How much stock there is after taking items to fulfill order from inventory
+    Build Item x: How many items needed to be built to fulfil and/or restock inventory
+    Pick Up Day: The day in the work cycle that the item will be ready for the customer.Applied ceil to this calculation
+    because orders need to be packaged after being made, which means that they will be available the next work day.
+    Wait Time: How much time the customer waits from ordering the item and it being built. Calculated as Pick Up Day
+    plus 1 because there is a one day lapse betweeen sending a receiving an order
+
+    :param df: This is an input DataFrame from the orders function, which is the set of orders being run in the simulation.
+    :param machine_time_swap: This is an input parameter to pass to the build_time function for time to swap machines.
+    :param build_confidence: This is an input parameter to pass to the build_time function to set item build confidence
+    :param a_stock: This input parameter for sets how much Item A stock should be available before orders come in.
+    :param b_stock: This input parameter for sets how much Item B stock should be available before orders come in.
+    :param c_stock: This input parameter for sets how much Item C stock should be available before orders come in.
+    :param d_stock: This input parameter for sets how much Item D stock should be available before orders come in.
+    :param e_stock: This input parameter for sets how much Item D stock should be available before orders come in.
+    :return stock_df: This function returns this DataFrame, which is the completed stock_inventory_queue.
+    """
+
     stock_df = df.copy(deep=True)
-    # stock_df['cumsum A'] = stock_df['Item A'].cumsum(axis=0)
-    stock_df['start stock'] = 0
+
+    stock_df['Start Stock A'] = 0
     stock_df['Surplus A Stock'] = a_stock - stock_df.groupby('Day')['Item A'].cumsum(axis=0)
-    #stock_df['diff'] = stock_df.groupby(['Day'])['Surplus A Stock'].diff()
-    stock_df['start stoc'] = stock_df.groupby('Day')['Surplus A Stock'].shift(1).fillna(a_stock).astype('int')
-    #stock_df['Build Item A'] = np.where(stock_df['Surplus A Stock'] >= 1, 0, stock_df['Item A'])
+    stock_df['Start Stock A'] = stock_df.groupby('Day')['Surplus A Stock'].shift(1).fillna(a_stock).astype('int')
     stock_df['Build Item A'] = np.where(stock_df['Surplus A Stock'] >= 1, 0,
-                                        np.where(stock_df['start stoc'] >= 1,
-                                                 stock_df['Item A'] - stock_df['start stoc'], stock_df['Item A']))
+                                        np.where(stock_df['Start Stock A'] >= 1,
+                                                 stock_df['Item A'] - stock_df['Start Stock A'], stock_df['Item A']))
+
+    # Take note that Surplus x stock was used as a means to an end. Since I had to make negative numbers zero,
+    # in order to get accurate restock num. It has no negative effect on the simulation because all negative numbers
+    # in the simulation have the same value as any other negative number. Additionally, I changed the value to zero
+    # after I was already using it. Hence, when it is turned to zero, it is only used to calculate the restock column.
+    # Lastly, I am simulating that restocking take place for the last order  items are build directly for the customer as they come, and then
+    # restocked at the end of the day
     stock_df['Surplus A Stock'] = np.where(stock_df['Surplus A Stock'] < 0, 0, stock_df['Surplus A Stock'])
     stock_df['Restock A'] = stock_df.groupby('Day')['Surplus A Stock'].tail(1)
     stock_df['Restock A'] = a_stock - stock_df['Restock A']
     stock_df['Restock A'] = stock_df['Restock A'].fillna(0)
-    stock_df['test'] = stock_df['Build Item A'] + stock_df['Restock A']
+    # apply restock to next day order; Even though the restock is done after each day, the last day customer is able
+    # to get their order before the restocking is completed, and the next day orders do not start until restock is done
 
-    stock_df['Surplus B Stock'] = b_stock - stock_df['Item B']
-    stock_df['Build Item B'] = abs(b_stock - stock_df['Surplus B Stock'])
-    stock_df['Stock B Quantity'] = stock_df['Build Item B'] + stock_df['Surplus B Stock']
+    stock_df['Build Item A'] = stock_df['Build Item A'] + stock_df['Restock A']
 
-    stock_df['Surplus C Stock'] = c_stock - stock_df['Item C']
-    stock_df['Build Item C'] = abs(c_stock - stock_df['Surplus C Stock'])
-    stock_df['Stock C Quantity'] = stock_df['Build Item C'] + stock_df['Surplus C Stock']
+    stock_df['Start Stock B'] = 0
+    stock_df['Surplus B Stock'] = b_stock - stock_df.groupby('Day')['Item B'].cumsum(axis=0)
+    stock_df['Start Stock B'] = stock_df.groupby('Day')['Surplus B Stock'].shift(1).fillna(b_stock).astype('int')
+    stock_df['Build Item B'] = np.where(stock_df['Surplus B Stock'] >= 1, 0,
+                                        np.where(stock_df['Start Stock B'] >= 1,
+                                                 stock_df['Item B'] - stock_df['Start Stock B'], stock_df['Item B']))
+    stock_df['Surplus B Stock'] = np.where(stock_df['Surplus B Stock'] < 0, 0, stock_df['Surplus B Stock'])
+    stock_df['Restock B'] = stock_df.groupby('Day')['Surplus B Stock'].tail(1)
+    stock_df['Restock B'] = b_stock - stock_df['Restock B']
+    stock_df['Restock B'] = stock_df['Restock B'].fillna(0)
+    stock_df['Build Item B'] = stock_df['Build Item B'] + stock_df['Restock B']
 
-    stock_df['Surplus D Stock'] = d_stock - stock_df['Item D']
-    stock_df['Build Item D'] = abs(d_stock - stock_df['Surplus D Stock'])
-    stock_df['Stock D Quantity'] = stock_df['Build Item D'] + stock_df['Surplus D Stock']
+    stock_df['Start Stock C'] = 0
+    stock_df['Surplus C Stock'] = c_stock - stock_df.groupby('Day')['Item C'].cumsum(axis=0)
+    stock_df['Start Stock C'] = stock_df.groupby('Day')['Surplus C Stock'].shift(1).fillna(c_stock).astype('int')
+    stock_df['Build Item C'] = np.where(stock_df['Surplus C Stock'] >= 1, 0,
+                                        np.where(stock_df['Start Stock C'] >= 1,
+                                                 stock_df['Item C'] - stock_df['Start Stock C'], stock_df['Item C']))
+    stock_df['Surplus C Stock'] = np.where(stock_df['Surplus C Stock'] < 0, 0, stock_df['Surplus C Stock'])
+    stock_df['Restock C'] = stock_df.groupby('Day')['Surplus C Stock'].tail(1)
+    stock_df['Restock C'] = c_stock - stock_df['Restock C']
+    stock_df['Restock C'] = stock_df['Restock C'].fillna(0)
+    stock_df['Build Item C'] = stock_df['Build Item C'] + stock_df['Restock C']
 
-    stock_df['Surplus E Stock'] = e_stock - stock_df['Item E']
-    stock_df['Build Item E'] = abs(e_stock - stock_df['Surplus E Stock'])
-    stock_df['Stock E Quantity'] = stock_df['Build Item E'] + stock_df['Surplus E Stock']
+    stock_df['Start Stock D'] = 0
+    stock_df['Surplus D Stock'] = d_stock - stock_df.groupby('Day')['Item D'].cumsum(axis=0)
+    stock_df['Start Stock D'] = stock_df.groupby('Day')['Surplus D Stock'].shift(1).fillna(d_stock).astype('int')
+    stock_df['Build Item D'] = np.where(stock_df['Surplus D Stock'] >= 1, 0,
+                                        np.where(stock_df['Start Stock D'] >= 1,
+                                                 stock_df['Item D'] - stock_df['Start Stock D'], stock_df['Item D']))
+    stock_df['Surplus D Stock'] = np.where(stock_df['Surplus D Stock'] < 0, 0, stock_df['Surplus D Stock'])
+    stock_df['Restock D'] = stock_df.groupby('Day')['Surplus D Stock'].tail(1)
+    stock_df['Restock D'] = d_stock - stock_df['Restock D']
+    stock_df['Restock D'] = stock_df['Restock D'].fillna(0)
+    stock_df['Build Item D'] = stock_df['Build Item D'] + stock_df['Restock D']
+
+    stock_df['Start Stock E'] = 0
+    stock_df['Surplus E Stock'] = e_stock - stock_df.groupby('Day')['Item E'].cumsum(axis=0)
+    stock_df['Start Stock E'] = stock_df.groupby('Day')['Surplus E Stock'].shift(1).fillna(e_stock).astype('int')
+    stock_df['Build Item E'] = np.where(stock_df['Surplus E Stock'] >= 1, 0,
+                                        np.where(stock_df['Start Stock E'] >= 1,
+                                                 stock_df['Item E'] - stock_df['Start Stock E'], stock_df['Item E']))
+    stock_df['Surplus E Stock'] = np.where(stock_df['Surplus E Stock'] < 0, 0, stock_df['Surplus E Stock'])
+    stock_df['Restock E'] = stock_df.groupby('Day')['Surplus E Stock'].tail(1)
+    stock_df['Restock E'] = e_stock - stock_df['Restock E']
+    stock_df['Restock E'] = stock_df['Restock E'].fillna(0)
+    stock_df['Build Item E'] = stock_df['Build Item E'] + stock_df['Restock E']
 
     item_a_list = []
     item_b_list = []
@@ -213,7 +336,7 @@ def inventory_first_come_queue(df, machine_time_swap,  build_confidence, a_stock
     item_d_list = []
     item_e_list = []
 
-    item_a_counter = 0
+# https: // stackoverflow.com / questions / 16476924 / how - to - iterate - over - rows - in -a - dataframe - in -pandas
     for index, row in stock_df.iterrows():
 
         item_a_count = row['Build Item A']
@@ -237,25 +360,26 @@ def inventory_first_come_queue(df, machine_time_swap,  build_confidence, a_stock
         item_e_time = build_time(item_e_count, machine_time_swap, 4, 5, 6, confidence=build_confidence)
         item_e_list.append(item_e_time)
 
-    stock_df['A T'] = item_a_list
-    stock_df['B T'] = item_b_list
-    stock_df['C T'] = item_c_list
-    stock_df['D T'] = item_d_list
-    stock_df['E T'] = item_e_list
+    stock_df['Build A Hours'] = item_a_list
+    stock_df['Build B Hours'] = item_b_list
+    stock_df['Build C Hours'] = item_c_list
+    stock_df['Build D Hours'] = item_d_list
+    stock_df['Build E Hours'] = item_e_list
 
-    stock_df['Build Time'] = stock_df['A T'] #+ stock_df['B T'] + stock_df['C T'] + stock_df['D T'] + stock_df['E T']
-    stock_df['Pick Up Day'] = np.ceil((stock_df['Build Time'].cumsum(axis=0) / 7.5))
-    stock_df['Wait Time'] = stock_df['Pick Up Day'] - stock_df['Day'] + 1
+    stock_df['Order Build Hours'] = stock_df['Build A Hours'] + stock_df['Build B Hours'] + stock_df['Build C Hours'] \
+                             + stock_df['Build D Hours'] + stock_df['Build E Hours']
+    stock_df['Pick Up Day'] = np.ceil((stock_df['Order Build Hours'].cumsum(axis=0) / 7.5))
+    stock_df['Wait Time'] = stock_df['Pick Up Day'] + 1
 
-    preview = stock_df[['Order #', 'Day', 'Item A', 'start stoc', 'Surplus A Stock',
-                        'Build Item A', 'test', 'Restock A','A T', 'Build Time', 'Pick Up Day', 'Wait Time']]
-    print(preview)
-    # print(stock_df)
+    stock_df_preview = stock_df[['Order #', 'Day', 'Item A', 'Item B', 'Item C', 'Item D', 'Item E', 'Build A Hours',
+                                 'Build B Hours', 'Build C Hours', 'Build D Hours', 'Build E Hours',
+                                 'Order Build Hours', 'Pick Up Day', 'Wait Time']]
+    #print(stock_df_preview)
+
+    item_a_preview = stock_df[['Order #', 'Item A', 'Start Stock A', 'Surplus A Stock', 'Restock A', 'Build Item A',
+                               'Build A Hours']]
+    #print(item_a_preview)
     return stock_df
 
 
-desired_width = 500
-pd.set_option('display.width', desired_width)
-pd.set_option('display.max_columns', 30)
-
-main()
+main(num_of_samples=1000)
