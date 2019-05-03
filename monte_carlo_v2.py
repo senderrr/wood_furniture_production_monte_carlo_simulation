@@ -218,9 +218,9 @@ def first_come_queue(df, machine_time_swap, build_confidence):
     1       3       2       0       1       2
     2       2       4       2       5       0
     >>> test_df = first_come_queue(test_df, machine_time_swap=0.5, build_confidence=4)
-    >>> test_df.columns
-    Index(['Item A', 'Item B', 'Item C', 'Item D', 'Item E', 'Build A Hours', 'Build B Hours', 'Build C Hours', 'Build D Hours', 'Build E Hours', 'Build Time', 'Pick Up Day', 'Wait Time'], dtype='object')
-     """
+
+
+    """
 
     first_come_df = df.copy(deep=True)
 
@@ -309,7 +309,7 @@ def build_stock_inventory(df, stock, item_column, start_stock, surplus_stock, bu
     I adopted code from the following URL's as a resource to iterate over DataFrame rows:
     https://stackoverflow.com/questions/39109045/numpy-where-with-multiple-conditions/39111919
     """
-    
+
     df[start_stock] = 0
     df[surplus_stock] = stock - df.groupby('Day')[item_column].cumsum(axis=0)
     # set stock to input stock value
@@ -410,8 +410,8 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
     # preview the calculations that determine how much and when to build items for this queue
     stock_preview = stock_df[['Order #', 'Day', 'Item A', 'Start Stock A', 'Surplus A Stock',
                               'Build Item A', 'Restock A', 'Build A Hours']]
-    print(stock_preview)
+    #print(stock_preview)
     return stock_df
 
 
-main(num_of_samples=1000)
+main(num_of_samples=1)
