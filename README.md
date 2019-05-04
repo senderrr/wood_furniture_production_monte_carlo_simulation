@@ -74,7 +74,7 @@ when_to_build_stock_inventory function:
 
 1. Within the function, set the desired parameters to perform the PERT distribution. That is, set the low, likely, high, and confidence. Samples will be chosen on how many random items are made.  
 
-2. Within in the function, all parameters in the function except for the initial DataFrame and stock parameter must be strings.
+2. Within in the function, all parameters in the function, except for the initial DataFrame and stock parameter, must be strings.
 
 
 ## Github File Descriptions:
