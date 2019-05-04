@@ -11,10 +11,10 @@ import warnings
 
 
 def main(num_of_samples):
-    """This function runs the orders function to generate an order that is the rounded up US average work day per month,
-    22 days, and then puts that set of orders into the first_come_queue and stock_inventory_que 1,000 times. After
-    the simulation is run 1,000 times this function outputs aggregate statistics and two histogram distributions, one
-    for each of the different type of scenarios being run in the simulation.
+    """This function runs the orders function to generate a set of orders for the number of average US work days
+    per month, 22 days, and then puts that set of orders into the first_come_queue and stock_inventory_que 1,000 times.
+    After the simulation is run 1,000 times this function outputs aggregate statistics and two histogram distributions,
+    one for each of the different type of scenarios being run in the simulation.
 
     :param num_of_samples: This sets how many times to run the simulation.
     """
@@ -50,8 +50,8 @@ def main(num_of_samples):
 
     print('----')
 
-    print('Median stock inventory queue wait time customer wait time:', np.median(stock_wait_time_list), 'days.')
-    print('Mean stock inventory queue come queue customer wait time:',
+    print('Median stock inventory queue customer wait time:', np.median(stock_wait_time_list), 'days.')
+    print('Mean stock inventory queue customer wait time:',
           np.around(np.mean(stock_wait_time_list), decimals=2), 'days.')
     print('Max stock inventory queue customer wait time:', np.max(stock_wait_time_list), 'days.')
     print('Min stock inventory queue customer wait time:', np.min(stock_wait_time_list), 'days.')
@@ -64,7 +64,7 @@ def main(num_of_samples):
 
 
 def pert(low, likely, high, confidence=4, samples=10000):
-    """ This function creates randoms numbers via the PERT distribution.
+    """This function creates randoms numbers via the PERT distribution.
 
     :param low: This is the lowest expected value.
     :param likely: This is the most likely expected value or mode
@@ -91,9 +91,9 @@ def pert(low, likely, high, confidence=4, samples=10000):
 
 
 def orders(low, likely, high, daily_count_confidence, order_size_confidence, samples):
-    """ This function uses the PERT distribution function and
-    the np.random.choice function to create a set of random orders for a rounded average US work month, and outputs it
-    in the form  of a DataFrame to be called later in the simulation for both types of scenarios.
+    """This function uses the PERT distribution function and the np.random.choice function to create a set of
+    random orders for a rounded average US work month, and outputs it in the form  of a DataFrame
+    to be called later in the simulation for both types of scenarios.
 
     :param low: This is the lowest expected value, and will be called for the pert function.
     :param likely: This is the most likely expected value or mode, and it will be used for the pert function.
@@ -166,7 +166,7 @@ def orders(low, likely, high, daily_count_confidence, order_size_confidence, sam
 
 
 def build_time(item_list, machine_time_swap, low, likely, high, confidence):
-    """This function takes an input list, calls the pert function that list to calculate how long it takes to build
+    """This function takes an input list, calls the pert function to that list to calculate how long it takes to build
     all of the items in the list, and then returns the calculated series.
 
     :param item_list: This is a list of item counts.
@@ -231,6 +231,7 @@ def first_come_queue(df, machine_time_swap, build_confidence):
     item_d_list = []
     item_e_list = []
 
+    # Loop over each of the item columns in the DataFrame and call build_time to calculate build time for each item.
     for index, row in first_come_df.iterrows():
         item_a_count = row['Item A']
         item_b_count = row['Item B']
@@ -259,7 +260,7 @@ def first_come_queue(df, machine_time_swap, build_confidence):
     first_come_df['Build D Hours'] = item_d_list
     first_come_df['Build E Hours'] = item_e_list
 
-    # Build Item x: How many items needed to be built to fulfil and/or restock inventory
+    # Build Item x: How many items needed to be built to fulfil and/or restock inventory.
     first_come_df['Build Time'] = first_come_df['Build A Hours'] + first_come_df['Build B Hours'] + \
                                   first_come_df['Build C Hours'] + first_come_df['Build D Hours'] + \
                                   first_come_df['Build E Hours']
@@ -269,33 +270,34 @@ def first_come_queue(df, machine_time_swap, build_confidence):
     first_come_df['Wait Time'] = first_come_df['Pick Up Day'] + 1
 
     # print(first_come_df)
-
     return first_come_df
 
 
 def when_to_build_stock_inventory(df, stock, item_column, start_stock, surplus_stock, build_item, restock):
-    """ This function takes a DataFrame  for the stock_inventory_queue and determines when or how many items need to be
+    """This function takes a DataFrame  or the stock_inventory_queue and determines when or how many items need to be
     pulled from the stock inventory to fulfill an order, and it also determines when to build additional items, in order
     to fulfill an order that requires more than there are items in the stock inventory or to restock it.
 
     :param df: This is the DataFrame that will be used to subset each of the items and to determine how many items
             need to build and when to fulfill orders or restock the stock inventory.
     :param stock: This is how much stock the manufactory holds at the start of a day of a given item, such as a_stock.
-    :param item_column: This is the column of items
-    :param start_stock: This a column that will be created for each item that describes starting stock inventory quantity.
+    :param item_column: This is the Item A, Item B, and so on columns that count the items per order.
+    :param start_stock: This a column that will be created for each item that describes how much stock there is for an
+                        item before items are pulled from the stock inventory to fulfill the order.
     :param surplus_stock: This a column that will be created for each item that describes how much inventory there is
                         for each item after items have been pulled to fulfill orders.
     :param build_item: This is a column that will be created for each item
-                    that describes how many items need to be built and when.
+                       that describes how many items need to be built and when (in combination with the Day column).
     :param restock: This is a column that will be created for each item that says how many items need to be made
                     at the end of the day to restock the stock inventory.
-    :return build_item_column: This is a column that will be created that describes when and how many items
-                            need to be built to fulfill each order that comes in or to restock the stock inventory.
+    :return build_item_column: This is the return variable and is renamed from the build item parameter.
+                               This column will be created that describes when and how many items
+                               need to be built to fulfill each order that comes in or to restock the stock inventory.
 
     Note on calling function:
     All parameters in the function except for the initial DataFrame and stock parameter must be strings.
 
-    IF you want to see how this function works, but on a smaller scale, uncomment the stock_preview in the
+    If you want to see how this function works, but on a smaller scale, uncomment the stock_preview in the
     stock_inventory_queue function, which will give a preview on only item A.
 
     Note on surplus stock parameter: Surplus stock was used as a means to an end. Since I had to make negative numbers
@@ -304,8 +306,9 @@ def when_to_build_stock_inventory(df, stock, item_column, start_stock, surplus_s
     Additionally, I changed the value to zero after I was already using it.
     Hence, when it is turned to zero, it is only used to calculate the restock column.
 
-    Note on restock parameter: Lastly, I am simulating that restocking take place for the last order items are build
-    directly for the customer as they come, and then restocked at the end of the day
+    Note on restock parameter: Lastly, I am simulating that restocking takes place simultaneously as the last order
+    of items items is built. I am doing this because it would be inefficient to complete the last order then restock
+    the stock inventory.
 
     I adopted code from the following URL's as a resource to iterate over DataFrame rows:
     https://stackoverflow.com/questions/39109045/numpy-where-with-multiple-conditions/39111919
@@ -342,9 +345,9 @@ def when_to_build_stock_inventory(df, stock, item_column, start_stock, surplus_s
 
     df[start_stock] = 0
     df[surplus_stock] = stock - df.groupby('Day')[item_column].cumsum(axis=0)
-    # set stock to input stock value
+    # Set stock to input stock value.
     df[start_stock] = df.groupby('Day')[surplus_stock].shift(1).fillna(stock).astype('int')
-    # How many items needed to be built to fulfil and/or restock inventory
+    # How many items needed to be built to fulfil and/or restock inventory.
     df[build_item] = np.where(df[surplus_stock] >= 1, 0, np.where(df[start_stock] >= 1,
                                                                   df[item_column] - df[start_stock], df[item_column]))
     df[surplus_stock] = np.where(df[surplus_stock] < 0, 0, df[surplus_stock])
@@ -373,10 +376,24 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
 
     I adopted code from the following URL's as a resource to iterate over DataFrame rows:
     https://stackoverflow.com/questions/16476924/how-to-iterate-over-rows-in-a-dataframe-in-pandas
+
+    >>> test_df = pd.DataFrame({'Order #': [1, 2, 3], 'Day': [1, 1, 2],'Item A': [1, 3, 2], 'Item B': [1, 2, 4],
+    ... 'Item C': [3, 0, 2], 'Item D': [2, 1, 5], 'Item E': [5, 2, 0]})
+    >>> test_df
+       Order #  Day  Item A  Item B  Item C  Item D  Item E
+    0        1    1       1       1       3       2       5
+    1        2    1       3       2       0       1       2
+    2        3    2       2       4       2       5       0
+    >>> stock_inventory_test_df = stock_inventory_queue(test_df, machine_time_swap=0.5, build_confidence=4, a_stock=6,
+    ...                                       b_stock=6, c_stock=8, d_stock=6, e_stock=3)
+    >>> type(test_df)
+    <class 'pandas.core.frame.DataFrame'>
     """
 
     stock_df = df.copy(deep=True)
 
+    # call the when_to_build_stock_inventory function to determine when to pull stock from inventory,
+    # when to  make new items, and when to resupply the stock inventory.
     stock_df['Build Item A'] = when_to_build_stock_inventory(stock_df, a_stock, 'Item A', 'Start Stock A',
                                                              'Surplus A Stock', 'Build Item A', 'Restock A')
 
@@ -398,6 +415,7 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
     item_d_list = []
     item_e_list = []
 
+    # Loop over each of the item columns in the DataFrame and call build_time to calculate build time for each item.
     for index, row in stock_df.iterrows():
 
         item_a_count = row['Build Item A']
@@ -437,10 +455,11 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
 
     pd.set_option('display.expand_frame_repr', False)
 
-    # preview the calculations that determine how much and when to build items for this queue
+    # preview the calculations that determine how much and when to build items for this queue.
     stock_preview = stock_df[['Order #', 'Day', 'Item A', 'Start Stock A', 'Surplus A Stock',
                               'Build Item A', 'Restock A', 'Build A Hours']]
-    #print(stock_preview)
+    # print(stock_preview)
+    # print(stock_df
     return stock_df
 
 
