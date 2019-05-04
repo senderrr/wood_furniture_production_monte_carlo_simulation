@@ -294,6 +294,8 @@ def when_to_build_stock_inventory(df, stock, item_column, start_stock, surplus_s
                                This column will be created that describes when and how many items
                                need to be built to fulfill each order that comes in or to restock the stock inventory.
 
+    Function Notes:
+    
     Note on calling function:
     All parameters in the function except for the initial DataFrame and stock parameter must be strings.
 
