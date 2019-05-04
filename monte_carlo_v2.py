@@ -295,7 +295,7 @@ def when_to_build_stock_inventory(df, stock, item_column, start_stock, surplus_s
                                need to be built to fulfill each order that comes in or to restock the stock inventory.
 
     Function Notes:
-    
+
     Note on calling function:
     All parameters in the function except for the initial DataFrame and stock parameter must be strings.
 
@@ -419,7 +419,6 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
 
     # Loop over each of the item columns in the DataFrame and call build_time to calculate build time for each item.
     for index, row in stock_df.iterrows():
-
         item_a_count = row['Build Item A']
         item_b_count = row['Build Item B']
         item_c_count = row['Build Item C']
