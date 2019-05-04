@@ -79,8 +79,6 @@ when_to_build_stock_inventory function:
 
 ## Github File Descriptions:
 
-monte_carlo_v1.py: Initial py files of my first simulation scenario, but I have since altered it (out of date).
-
 monte_carlo_v2.py: Updated py files of the current simulation.
 
 First Come First Serve Wait Time Queue Distribution.png.png: Scenario 1 First Come First Serve Queue Simulation Distribution Histogram
