@@ -27,6 +27,7 @@ def main(num_of_samples):
     for i in range(num_of_samples):
         print('Running sample:', i)
         generate_orders = orders(0, 2, 5, daily_count_confidence=4, order_size_confidence=4, samples=1)
+
         fcq = first_come_queue(generate_orders, machine_time_swap=0.5, build_confidence=4)
 
         stock_queue = stock_inventory_queue(generate_orders, machine_time_swap=0.5, build_confidence=4, a_stock=6,
@@ -45,7 +46,7 @@ def main(num_of_samples):
     plt.xlabel('Wait Time')
     plt.ylabel('Count')
     plt.title('First Come First Serve Wait Time Queue Distribution')
-    # plt.show()
+    plt.show()
 
     print('----')
 
@@ -59,7 +60,7 @@ def main(num_of_samples):
     plt.xlabel('Wait Time')
     plt.ylabel('Count')
     plt.title('Stock Inventory Wait Time Queue Distribution')
-    # plt.show()
+    plt.show()
 
 
 def pert(low, likely, high, confidence=4, samples=10000):
@@ -443,4 +444,4 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
     return stock_df
 
 
-main(num_of_samples=1)
+main(num_of_samples=1000)
