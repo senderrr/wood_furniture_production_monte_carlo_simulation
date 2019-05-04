@@ -74,7 +74,7 @@ monte_carlo_v2.py: Updated py files of the current simulation.
 old_stock_inventory_code.py: This file contains old code that I used to create my build_stock_inventory function.
 
 
-Serve Wait Time Queue Distribution.png: Scenario 1 First Come First Queue Simulation Distribution Histogram
+First Come First Serve Wait Time Queue Distribution.png.png: Scenario 1 First Come First Serve Queue Simulation Distribution Histogram
 
 Stock Inventory Wait Time Queue Distribution.png: Scenario 2 Stock Inventory Queue Distribution Histogram
 
