@@ -60,7 +60,7 @@ orders function:
 Set how many work days that you would like to similar in the first range loop. 
 In the inner range loop, set the PERT distribution for how many items per order and set the probabilities in the order_items variable. Change the item_order_options as needed, but make sure that you change the item_order_options, and the return dataframe variable.
 
-build_stock_inventory function:
+when_to_build_stock_inventory function:
 
 All parameters in the function except for the initial DataFrame and stock parameter must be strings.
 
