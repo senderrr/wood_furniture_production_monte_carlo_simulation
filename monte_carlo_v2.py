@@ -225,11 +225,11 @@ def first_come_queue(df, machine_time_swap, build_confidence):
 
     first_come_df = df.copy(deep=True)
 
-    item_a_list = []
-    item_b_list = []
-    item_c_list = []
-    item_d_list = []
-    item_e_list = []
+    item_a_time_list = []
+    item_b_time_list = []
+    item_c_time_list = []
+    item_d_time_list = []
+    item_e_time_list = []
 
     # Loop over each of the item columns in the DataFrame and call build_time to calculate build time for each item.
     for index, row in first_come_df.iterrows():
@@ -240,25 +240,25 @@ def first_come_queue(df, machine_time_swap, build_confidence):
         item_e_count = row['Item E']
 
         item_a_time = build_time(item_a_count, machine_time_swap, 1, 3, 4, confidence=build_confidence)
-        item_a_list.append(item_a_time)
+        item_a_time_list.append(item_a_time)
 
         item_b_time = build_time(item_b_count, machine_time_swap, 0.5, 0.75, 1, confidence=build_confidence)
-        item_b_list.append(item_b_time)
+        item_b_time_list.append(item_b_time)
 
         item_c_time = build_time(item_c_count, machine_time_swap, 1, 1.5, 2, confidence=build_confidence)
-        item_c_list.append(item_c_time)
+        item_c_time_list.append(item_c_time)
 
         item_d_time = build_time(item_d_count, machine_time_swap, 2, 2.5, 3, confidence=build_confidence)
-        item_d_list.append(item_d_time)
+        item_d_time_list.append(item_d_time)
 
         item_e_time = build_time(item_e_count, machine_time_swap, 4, 5, 6, confidence=build_confidence)
-        item_e_list.append(item_e_time)
+        item_e_time_list.append(item_e_time)
 
-    first_come_df['Build A Hours'] = item_a_list
-    first_come_df['Build B Hours'] = item_b_list
-    first_come_df['Build C Hours'] = item_c_list
-    first_come_df['Build D Hours'] = item_d_list
-    first_come_df['Build E Hours'] = item_e_list
+    first_come_df['Build A Hours'] = item_a_time_list
+    first_come_df['Build B Hours'] = item_b_time_list
+    first_come_df['Build C Hours'] = item_c_time_list
+    first_come_df['Build D Hours'] = item_d_time_list
+    first_come_df['Build E Hours'] = item_e_time_list
 
     # Build Item x: How many items needed to be built to fulfil and/or restock inventory.
     first_come_df['Build Time'] = first_come_df['Build A Hours'] + first_come_df['Build B Hours'] + \
@@ -409,11 +409,11 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
     stock_df['Build Item E'] = when_to_build_stock_inventory(stock_df, e_stock, 'Item E', 'Start Stock E',
                                                              'Surplus E Stock', 'Build Item E', 'Restock E')
 
-    item_a_list = []
-    item_b_list = []
-    item_c_list = []
-    item_d_list = []
-    item_e_list = []
+    item_a_time_list = []
+    item_b_time_list = []
+    item_c_time_list = []
+    item_d_time_list = []
+    item_e_time_list = []
 
     # Loop over each of the item columns in the DataFrame and call build_time to calculate build time for each item.
     for index, row in stock_df.iterrows():
@@ -425,25 +425,25 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
         item_e_count = row['Build Item E']
 
         item_a_time = build_time(item_a_count, machine_time_swap, 1, 3, 4, confidence=build_confidence)
-        item_a_list.append(item_a_time)
+        item_a_time_list.append(item_a_time)
 
         item_b_time = build_time(item_b_count, machine_time_swap, 0.5, 0.75, 1, confidence=build_confidence)
-        item_b_list.append(item_b_time)
+        item_b_time_list.append(item_b_time)
 
         item_c_time = build_time(item_c_count, machine_time_swap, 1, 1.5, 2, confidence=build_confidence)
-        item_c_list.append(item_c_time)
+        item_c_time_list.append(item_c_time)
 
         item_d_time = build_time(item_d_count, machine_time_swap, 2, 2.5, 3, confidence=build_confidence)
-        item_d_list.append(item_d_time)
+        item_d_time_list.append(item_d_time)
 
         item_e_time = build_time(item_e_count, machine_time_swap, 4, 5, 6, confidence=build_confidence)
-        item_e_list.append(item_e_time)
+        item_e_time_list.append(item_e_time)
 
-    stock_df['Build A Hours'] = item_a_list
-    stock_df['Build B Hours'] = item_b_list
-    stock_df['Build C Hours'] = item_c_list
-    stock_df['Build D Hours'] = item_d_list
-    stock_df['Build E Hours'] = item_e_list
+    stock_df['Build A Hours'] = item_a_time_list
+    stock_df['Build B Hours'] = item_b_time_list
+    stock_df['Build C Hours'] = item_c_time_list
+    stock_df['Build D Hours'] = item_d_time_list
+    stock_df['Build E Hours'] = item_e_time_list
 
     stock_df['Order Build Hours'] = stock_df['Build A Hours'] + stock_df['Build B Hours'] + stock_df['Build C Hours'] \
                              + stock_df['Build D Hours'] + stock_df['Build E Hours']
