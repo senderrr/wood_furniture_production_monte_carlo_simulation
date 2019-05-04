@@ -1,3 +1,4 @@
+"""This is what I had in my stock_inventory_queue before I build my when_to_build_stock_inventory function"""
 # Start Stock x: How much inventory the manufactory has of the item
 # stock_df['Start Stock A'] = 0
 # # Surplus Stock: How much stock there is after taking items from stock inventory to fulfill order

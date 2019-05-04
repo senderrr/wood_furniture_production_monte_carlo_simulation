@@ -271,7 +271,7 @@ def first_come_queue(df, machine_time_swap, build_confidence):
     return first_come_df
 
 
-def build_stock_inventory(df, stock, item_column, start_stock, surplus_stock, build_item, restock):
+def when_to_build_stock_inventory(df, stock, item_column, start_stock, surplus_stock, build_item, restock):
     """ This function takes a DataFrame  for the stock_inventory_queue and determines when or how many items need to be
     pulled from the stock inventory to fulfill an order, and it also determines when to build additional items, in order
     to fulfill an order that requires more than there are items in the stock inventory or to restock it.
@@ -321,7 +321,7 @@ def build_stock_inventory(df, stock, item_column, start_stock, surplus_stock, bu
     5        6    3       3       2       0       2       5
     6        7    3       7       1       2       1       0
     7        8    4       4       5       4       8       0
-    >>> build_stock_df = build_stock_inventory(test_df, 6, 'Item A', 'Start Stock A', 'Surplus A Stock',
+    >>> build_stock_df = when_to_build_stock_inventory(test_df, 6, 'Item A', 'Start Stock A', 'Surplus A Stock',
     ...                                                 'Build Item A', 'Restock A')
     >>> build_stock_df
     0     0.0
@@ -375,20 +375,20 @@ def stock_inventory_queue(df, machine_time_swap,  build_confidence, a_stock, b_s
 
     stock_df = df.copy(deep=True)
 
-    stock_df['Build Item A'] = build_stock_inventory(stock_df, a_stock, 'Item A', 'Start Stock A', 'Surplus A Stock',
-                                                     'Build Item A', 'Restock A')
+    stock_df['Build Item A'] = when_to_build_stock_inventory(stock_df, a_stock, 'Item A', 'Start Stock A',
+                                                             'Surplus A Stock', 'Build Item A', 'Restock A')
 
-    stock_df['Build Item B'] = build_stock_inventory(stock_df, b_stock, 'Item B', 'Start Stock B', 'Surplus B Stock',
-                                                     'Build Item B', 'Restock B')
+    stock_df['Build Item B'] = when_to_build_stock_inventory(stock_df, b_stock, 'Item B', 'Start Stock B',
+                                                             'Surplus B Stock', 'Build Item B', 'Restock B')
 
-    stock_df['Build Item C'] = build_stock_inventory(stock_df, c_stock, 'Item C', 'Start Stock C', 'Surplus C Stock',
-                                                     'Build Item C', 'Restock C')
+    stock_df['Build Item C'] = when_to_build_stock_inventory(stock_df, c_stock, 'Item C', 'Start Stock C',
+                                                             'Surplus C Stock', 'Build Item C', 'Restock C')
 
-    stock_df['Build Item D'] = build_stock_inventory(stock_df, d_stock, 'Item D', 'Start Stock D', 'Surplus D Stock',
-                                                     'Build Item D', 'Restock D')
+    stock_df['Build Item D'] = when_to_build_stock_inventory(stock_df, d_stock, 'Item D', 'Start Stock D',
+                                                             'Surplus D Stock', 'Build Item D', 'Restock D')
 
-    stock_df['Build Item E'] = build_stock_inventory(stock_df, e_stock, 'Item E', 'Start Stock E', 'Surplus E Stock',
-                                                     'Build Item E', 'Restock E')
+    stock_df['Build Item E'] = when_to_build_stock_inventory(stock_df, e_stock, 'Item E', 'Start Stock E',
+                                                             'Surplus E Stock', 'Build Item E', 'Restock E')
 
     item_a_list = []
     item_b_list = []
