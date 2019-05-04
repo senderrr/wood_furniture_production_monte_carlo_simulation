@@ -181,7 +181,8 @@ def build_time(item_list, machine_time_swap, low, likely, high, confidence):
     >>> item_list = test_df['Item A']
     >>> type(item_list)
     <class 'pandas.core.series.Series'>
-    >>> test_df_build_time = build_time(item_list, 0.5, 1, 1.5, 2, confidence=4)
+    >>> machine_time_swap = 0.5
+    >>> test_df_build_time = build_time(item_list, machine_time_swap, 1, 1.5, 2, confidence=4)
     >>> type(test_df_build_time)
     <class 'numpy.float64'>
     """
@@ -217,8 +218,8 @@ def first_come_queue(df, machine_time_swap, build_confidence):
     1       3       2       0       1       2
     2       2       4       2       5       0
     >>> test_df = first_come_queue(test_df, machine_time_swap=0.5, build_confidence=4)
-
-
+    >>> type(test_df)
+    <class 'pandas.core.frame.DataFrame'>
     """
 
     first_come_df = df.copy(deep=True)
@@ -321,7 +322,8 @@ def when_to_build_stock_inventory(df, stock, item_column, start_stock, surplus_s
     5        6    3       3       2       0       2       5
     6        7    3       7       1       2       1       0
     7        8    4       4       5       4       8       0
-    >>> build_stock_df = when_to_build_stock_inventory(test_df, 6, 'Item A', 'Start Stock A', 'Surplus A Stock',
+    >>> a_stock = 6
+    >>> build_stock_df = when_to_build_stock_inventory(test_df, a_stock, 'Item A', 'Start Stock A', 'Surplus A Stock',
     ...                                                 'Build Item A', 'Restock A')
     >>> build_stock_df
     0     0.0
@@ -335,7 +337,6 @@ def when_to_build_stock_inventory(df, stock, item_column, start_stock, surplus_s
     Name: Build Item A, dtype: float64
     >>> type(build_stock_df)
     <class 'pandas.core.series.Series'>
-
     """
 
     df[start_stock] = 0
