@@ -88,5 +88,3 @@ Stock Inventory Wait Time Queue Distribution.png: Scenario 2 Stock Inventory Que
 Wieker_mc_poster_1.pdf: Poster Part 1
 
 Wieker_mc_poster_2.pdf: Poster Part 2
-
-doctest_coverage.png: This file shows my programs doctest coverage.
